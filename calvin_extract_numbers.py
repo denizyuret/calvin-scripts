@@ -2,12 +2,13 @@ import numpy as np
 import os
 import re
 import sys
+from tqdm import tqdm
 
-for f in sorted(os.listdir('.')):
+for f in tqdm(sorted(os.listdir('.'))):
     m = re.match(r"episode_(\d{7})\.npz", f)
     if m is not None:
         idnum = m.group(1)
-        data = np.load(f, allow_pickle=True)
+        data = np.load(f, allow_pickle=True, mmap_mode='r')
         actions = data.get("actions")  # 1-7(7)
         rel_actions = data.get("rel_actions")  # 8-14(7)
         robot_obs = data.get("robot_obs")  # 15-29(15)
