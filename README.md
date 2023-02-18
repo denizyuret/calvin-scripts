@@ -27,3 +27,16 @@
 * ep_start_end_ids.npy indicates the start and end idnums of segments in that particular directory.
 * ep_lens.npy indicates the lengths of segments given by ep_start_end_ids.npy.
 * statistics.yaml gives basic stats for numeric variables.
+
+| directory | scene_info.npy |
+| --------- | -------------- |
+| debug/training | {'calvin_scene_D': [358482, 361252]} |
+| debug/validation | {'calvin_scene_D': [553567, 555241]} |
+| D/training | {'calvin_scene_A': [0, 611098]} |
+| D/validation | . |
+| ABC/training | {'calvin_scene_B': [0, 598909], 'calvin_scene_C': [598910, 1191338], 'calvin_scene_A': [1191339, 1795044]} |
+| ABC/validation | . |
+| ABCD/training | {'calvin_scene_A': [1802438, 2406143], 'calvin_scene_B': [611099, 1210008], 'calvin_scene_C': [1210009, 1802437], 'calvin_scene_D': [0, 611098]} |
+| ABCD/validation | . |
+
+
