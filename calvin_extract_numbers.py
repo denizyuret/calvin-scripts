@@ -1,3 +1,6 @@
+# cd /datasets/calvin/debug/train
+# python calvin_extract_numbers.py > debug-train.tsv
+
 import numpy as np
 import os
 import re
