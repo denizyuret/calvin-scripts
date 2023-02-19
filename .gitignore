@@ -1,6 +1,11 @@
 # Deniz stuff
 *~
 foo*
+*.err
+*.out
+*.tsv
+*.tsv.gz
+*.desc
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
