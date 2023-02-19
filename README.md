@@ -20,7 +20,7 @@
 
 * debug-training.tsv, debug-validation.tsv, etc.: https://github.com/denizyuret/calvin-scripts/releases/tag/v0.0.1 The release page has the output of calvin_extract_numbers scripts.
 
-* calvin_idnums.py: Extract episode_idnum ranges for each directory.
+* calvin_scene_info.py: Extract episode_idnum ranges for each directory.
 
 # calvin-files
 
