@@ -12,8 +12,8 @@
 
 
 	* TODO:
-	- write intervals.py to check intervals
-	- check overlaps see if identical
-	- check visual difference in A vs D
+	+ write intervals.py to check intervals: done, several off-by-one errors in ABCD/training (frames common with validation).
+	+ check overlaps see if identical: all identical but renumbered.
+	+ check visual difference in A vs D: B is lightest, A is darkest, C and D similar with C having a straight pattern, D a bit lighter.
 	- see if ep_start_end is consistent with frame diffs
 	- improved visualizer to see what number is what
