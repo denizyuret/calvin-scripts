@@ -1,3 +1,6 @@
+# python calvin_scene_info.py
+# Read and print info in the scene_info.npy, ep_lens.npy, ep_start_end_ids.npy files in each calvin data directory
+
 import os
 import numpy as np
 
