@@ -34,11 +34,22 @@
 | --------- | -------------- |
 | debug/training | {'calvin_scene_D': [358482, 361252]} |
 | debug/validation | {'calvin_scene_D': [553567, 555241]} |
-| D/training | {'calvin_scene_A': [0, 611098]} |
+| D/training | {'calvin_scene_D': [0, 611098]} |
 | D/validation | . |
 | ABC/training | {'calvin_scene_B': [0, 598909], 'calvin_scene_C': [598910, 1191338], 'calvin_scene_A': [1191339, 1795044]} |
 | ABC/validation | . |
-| ABCD/training | {'calvin_scene_A': [1802438, 2406143], 'calvin_scene_B': [611099, 1210008], 'calvin_scene_C': [1210009, 1802437], 'calvin_scene_D': [0, 611098]} |
+| ABCD/training | {'calvin_scene_D': [0, 611098], 'calvin_scene_B': [611099, 1210008], 'calvin_scene_C': [1210009, 1802437], 'calvin_scene_A': [1802438, 2406143]} |
 | ABCD/validation | . |
 
+The validation directories for ABCD, ABC, and D have the same content: calvin_scene_D:
+0:53818, 219635:244284, 399946:420498. (99022 frames).
 
+The training directory for D has the rest of the scene D data: calvin_scene_D: 53819:219634,
+244285:399945, 420499:611098. (512077 frames).  (scene_info.npy says scene_A but should be
+scene_D).
+
+The training directory for ABCD starts with the same content as D/training (except for
+several off-by-one errors) followed by B (598910), C (592429), and A (603706) sections which
+are identical to ABC/training but renumbered.
+
+The scenes differ by desk color and drawer positioning. The objects look the same.

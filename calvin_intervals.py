@@ -17,25 +17,30 @@ for line in sys.stdin:
 print(interval_start, '\t', last_index)
 
 # $ for i in *.gz; do echo $i; zcat $i | python ../calvin_intervals.py; done
+# ABCD-training.tsv.gz
+# 37682 	 37682		??? singleton, repeats in val
+# 53818 	 219634		??? 53818 repeats in val
+# 244284 	 399945		??? 244284 repeats in val
+# 420498 	 1992529	??? 420498 repeats in val
 # ABCD-validation.tsv.gz
-# 0 	 53818
-# 219635 	 244284
-# 399946 	 420498
+#D 0 	 53818
+#D 219635 	 244284
+#D 399946 	 420498
 # ABC-training.tsv.gz
 # 0 	 1795044
-# ABC-validation.tsv.gz
-# 0 	 53818
-# 219635 	 244284
-# 399946 	 420498
-# debug-training.tsv.gz
-# 358482 	 361252
-# debug-validation.tsv.gz
-# 553567 	 555241
-# D-training.tsv.gz
-# 53819 	 219634
-# 244285 	 399945
-# 420499 	 611098
-# D-validation.tsv.gz
-# 0 	 53818
-# 219635 	 244284
-# 399946 	 420498
+## ABC-validation.tsv.gz
+#D 0 	 53818
+#D 219635 	 244284
+#D 399946 	 420498
+## debug-training.tsv.gz
+#D 358482 	 361252
+## debug-validation.tsv.gz
+#D 553567 	 555241
+## D-training.tsv.gz		??? scene-info.npy says dataset A!
+#D 53819 	 219634
+#D 244285 	 399945
+#D 420499 	 611098
+## D-validation.tsv.gz
+#D 0 	 53818
+#D 219635 	 244284
+#D 399946 	 420498
