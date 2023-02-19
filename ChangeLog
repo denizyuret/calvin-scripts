@@ -1,0 +1,8 @@
+2023-02-19  Deniz Yuret  <dyuret@WS001>
+
+	* TODO:
+	- write intervals.py to check intervals
+	- check overlaps see if identical
+	- check visual difference in A vs D
+	- see if ep_start_end is consistent with frame diffs
+	- improved visualizer to see what number is what
