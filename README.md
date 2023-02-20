@@ -18,6 +18,9 @@
 
 * `python visualize_calvin_npz.py /datasets/calvin/D/validation/episode_0000000.npz`: Visualize a single frame from a given npz file.
 
+* `python calvin_visualize.py`: Visualize a series of frames in the current directory, a more detailed version of the original visualize_dataset.py.
+
+
 # calvin-files
 
 * episode_XXXXXXX.npz: Each frame is represented in a file named episode_idnum.npz, consecutive idnums indicate consecutive frames (with the exception of episode transitions I guess). Other files indicating the contents: 
