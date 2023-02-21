@@ -34,9 +34,20 @@ def numeric_fields(npz, idnum):
     desk        = f"door:{d[0]: 5.2f} drawer:{d[1]: 5.2f} button:{d[2]: 5.2f} switch:{d[3]: 5.2f} bulb:{d[4]: 5.2f} green:{d[5]: 5.2f}"
     index = int(idnum)
     ann = []
+    prev = ''
     for n, ((low, high), t, s) in enumerate(annotations):
-        if index >= low and index <= high:
-            ann.append(f"{low}:{high}:{t}: {s}")
+        if index > high:
+            prev = f"<{low}:{high}:{t}: {s}"
+        elif index >= low and index <= high:
+            if not ann and prev:
+                ann.append(prev)
+            ann.append(f"={low}:{high}:{t}: {s}")
+        elif index < low:
+            if not ann and prev:
+                ann.append(prev)
+            ann.append(f">{low}:{high}:{t}: {s}")
+            break
+            
     return '\n'.join((indexstr, actions, rel_actions, robot_obs, robot_arm, red, blue, pink, desk, *ann))
 
 def update_frame(value):
@@ -74,7 +85,7 @@ for f in tqdm(sorted(os.listdir('.'))):
 
 # Read annotations:
 annotations = np.load("lang_annotations/auto_lang_ann.npy", allow_pickle=True).item()
-annotations = list(zip(annotations["info"]["indx"], annotations["language"]["task"], annotations["language"]["ann"]))
+annotations = sorted(list(zip(annotations['info']['indx'], annotations['language']['task'], annotations['language']['ann'])))
 
 
 # Arrange the windows:
@@ -86,33 +97,33 @@ frm = [ [ tk.Frame(row[0]) for i in range(3) ],
 for i in range(4):
     row[i].pack()
     for j in range(len(frm[i])):
-        frm[i][j].pack(side="left")
+        frm[i][j].pack(side='left')
 
 tklabels = [
-    tk.Label(frm[0][0], text="rgb_static"),
+    tk.Label(frm[0][0], text='rgb_static'),
     tk.Label(frm[0][0]), #, image=rgb_static),
-    tk.Label(frm[0][1], text="depth_static"),
+    tk.Label(frm[0][1], text='depth_static'),
     tk.Label(frm[0][1]), # , image=depth_static),
-    tk.Label(frm[0][2], text="rgb_gripper"),
+    tk.Label(frm[0][2], text='rgb_gripper'),
     tk.Label(frm[0][2]), # , image=rgb_gripper),
-    tk.Label(frm[0][2], text="depth_gripper"),
+    tk.Label(frm[0][2], text='depth_gripper'),
     tk.Label(frm[0][2]), # , image=depth_gripper),
-    tk.Label(frm[1][0], text="rgb_tactile1"),
+    tk.Label(frm[1][0], text='rgb_tactile1'),
     tk.Label(frm[1][0]), # , image=rgb_tactile1),
-    tk.Label(frm[1][1], text="rgb_tactile2"),
+    tk.Label(frm[1][1], text='rgb_tactile2'),
     tk.Label(frm[1][1]), # , image=rgb_tactile2),
-    tk.Label(frm[1][2], text="depth_tactile1"),
+    tk.Label(frm[1][2], text='depth_tactile1'),
     tk.Label(frm[1][2]), # , image=depth_tactile1),
-    tk.Label(frm[1][3], text="depth_tactile2"),
+    tk.Label(frm[1][3], text='depth_tactile2'),
     tk.Label(frm[1][3]), # , image=depth_tactile2),
-    tk.Label(frm[3][0], text='', justify="left", anchor="nw")
+    tk.Label(frm[3][0], text='', justify='left', anchor='nw')
 ]
 
 for lbl in tklabels:
     lbl.pack()
 
 # Slider:
-slider = tk.Scale(frm[2][0], from_=0, to=len(idnums)-1, orient=tk.HORIZONTAL, command=update_frame, length=500, resolution=1.0)
+slider = tk.Scale(frm[2][0], from_=0, to=len(idnums)-1, orient=tk.HORIZONTAL, command=update_frame, length=500, resolution=1.0, showvalue=False)
 slider.pack()
 
 # Initialize with first frame

@@ -8,6 +8,8 @@
 
 * `calvin_scene_info.py`: Read and print info in the scene_info.npy, ep_lens.npy, ep_start_end_ids.npy files in each calvin data directory.
 
+* `calvin_extract_language.py`: Print all the unique task_ids and language annotations in the dataset. There are 34 unique task ids and 389 unique annotations.
+
 * `zcat D-validation.tsv.gz | python calvin_diffs.py`: prints out the differences with the previous line for all but the first line.
 
 * `zcat D-validation.tsv.gz | python calvin_episodes.py`: Tries to guess the episode boundaries if xyz of successive frames differ by more than 8.5 std.
