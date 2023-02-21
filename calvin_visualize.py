@@ -19,20 +19,33 @@ def array2image(a):
     return ImageTk.PhotoImage(Image.fromarray(a))
 
 def numeric_fields(npz, idnum):
-    indexstr    = f"frame: {idnum}"
+    index = int(idnum)
+    scene = ''
+    for (key, (low, high)) in scenes.items():
+        if index >= low and index <= high:
+            scene = key[-1]
+            break
+    ep_start = ''
+    ep_end = ''
+    for (low, high) in episodes:
+        if index >= low and index <= high:
+            ep_start = low
+            ep_end = high
+            break
+    indexstr = f"frame: {idnum} ({scene}:{ep_start}:{ep_end})"
+    
     a = npz['actions']
-    actions     = f"act:  x:{a[0]: 5.2f} y:{a[1]: 5.2f} z:{a[2]: 5.2f} a:{a[3]: 5.2f} b:{a[4]: 5.2f} c:{a[5]: 5.2f} grp:{a[6]: 5.2f}"
+    actions = f"act:  x:{a[0]: 5.2f} y:{a[1]: 5.2f} z:{a[2]: 5.2f} a:{a[3]: 5.2f} b:{a[4]: 5.2f} c:{a[5]: 5.2f} grp:{a[6]: 5.2f}"
     b = npz['rel_actions']
     rel_actions = f"rel:  x:{b[0]: 5.2f} y:{b[1]: 5.2f} z:{b[2]: 5.2f} a:{b[3]: 5.2f} b:{b[4]: 5.2f} c:{b[5]: 5.2f} grp:{b[6]: 5.2f}"
     c = npz['robot_obs']
-    robot_obs   = f"tcp:  x:{c[0]: 5.2f} y:{c[1]: 5.2f} z:{c[2]: 5.2f} a:{c[3]: 5.2f} b:{c[4]: 5.2f} c:{c[5]: 5.2f} grp:{c[6]*100: 5.2f}"
-    robot_arm   = f"arm:  a:{c[7]: 5.2f} b:{c[8]: 5.2f} c:{c[9]: 5.2f} d:{c[10]: 5.2f} e:{c[11]: 5.2f} f:{c[12]: 5.2f} g:{c[13]: 5.2f} grp:{c[14]: 5.2f}"
+    robot_obs = f"tcp:  x:{c[0]: 5.2f} y:{c[1]: 5.2f} z:{c[2]: 5.2f} a:{c[3]: 5.2f} b:{c[4]: 5.2f} c:{c[5]: 5.2f} grp:{c[6]*100: 5.2f}"
+    robot_arm = f"arm:  a:{c[7]: 5.2f} b:{c[8]: 5.2f} c:{c[9]: 5.2f} d:{c[10]: 5.2f} e:{c[11]: 5.2f} f:{c[12]: 5.2f} g:{c[13]: 5.2f} grp:{c[14]: 5.2f}"
     d = npz['scene_obs']
-    red         = f"red:  x:{d[6]: 5.2f} y:{d[7]: 5.2f} z:{d[8]: 5.2f} a:{d[9]: 5.2f} b:{d[10]: 5.2f} c:{d[11]: 5.2f}"
-    blue        = f"blue: x:{d[12]: 5.2f} y:{d[13]: 5.2f} z:{d[14]: 5.2f} a:{d[15]: 5.2f} b:{d[16]: 5.2f} c:{d[17]: 5.2f}"
-    pink        = f"pink: x:{d[18]: 5.2f} y:{d[19]: 5.2f} z:{d[20]: 5.2f} a:{d[21]: 5.2f} b:{d[22]: 5.2f} c:{d[23]: 5.2f}"
-    desk        = f"door:{d[0]: 5.2f} drawer:{d[1]: 5.2f} button:{d[2]: 5.2f} switch:{d[3]: 5.2f} bulb:{d[4]: 5.2f} green:{d[5]: 5.2f}"
-    index = int(idnum)
+    red = f"red:  x:{d[6]: 5.2f} y:{d[7]: 5.2f} z:{d[8]: 5.2f} a:{d[9]: 5.2f} b:{d[10]: 5.2f} c:{d[11]: 5.2f}"
+    blue = f"blue: x:{d[12]: 5.2f} y:{d[13]: 5.2f} z:{d[14]: 5.2f} a:{d[15]: 5.2f} b:{d[16]: 5.2f} c:{d[17]: 5.2f}"
+    pink = f"pink: x:{d[18]: 5.2f} y:{d[19]: 5.2f} z:{d[20]: 5.2f} a:{d[21]: 5.2f} b:{d[22]: 5.2f} c:{d[23]: 5.2f}"
+    desk = f"door:{d[0]: 5.2f} drawer:{d[1]: 5.2f} button:{d[2]: 5.2f} switch:{d[3]: 5.2f} bulb:{d[4]: 5.2f} green:{d[5]: 5.2f}"
     ann = []
     prev = ''
     for n, ((low, high), t, s) in enumerate(annotations):
@@ -87,6 +100,13 @@ for f in tqdm(sorted(os.listdir('.'))):
 annotations = np.load("lang_annotations/auto_lang_ann.npy", allow_pickle=True).item()
 annotations = sorted(list(zip(annotations['info']['indx'], annotations['language']['task'], annotations['language']['ann'])))
 
+
+# Read episode boundaries:
+episodes = sorted(np.load('ep_start_end_ids.npy', allow_pickle=True).tolist())
+
+
+# Read scene info:
+scenes = np.load('scene_info.npy', allow_pickle=True).item()
 
 # Arrange the windows:
 row = [ tk.Frame(root) for i in range(4) ]
