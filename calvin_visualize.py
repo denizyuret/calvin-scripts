@@ -32,7 +32,12 @@ def numeric_fields(npz, idnum):
     blue        = f"blue: x:{d[12]: 5.2f} y:{d[13]: 5.2f} z:{d[14]: 5.2f} a:{d[15]: 5.2f} b:{d[16]: 5.2f} c:{d[17]: 5.2f}"
     pink        = f"pink: x:{d[18]: 5.2f} y:{d[19]: 5.2f} z:{d[20]: 5.2f} a:{d[21]: 5.2f} b:{d[22]: 5.2f} c:{d[23]: 5.2f}"
     desk        = f"door:{d[0]: 5.2f} drawer:{d[1]: 5.2f} button:{d[2]: 5.2f} switch:{d[3]: 5.2f} bulb:{d[4]: 5.2f} green:{d[5]: 5.2f}"
-    return "\n".join((indexstr, actions, rel_actions, robot_obs, robot_arm, red, blue, pink, desk))
+    index = int(idnum)
+    ann = []
+    for n, ((low, high), t, s) in enumerate(annotations):
+        if index >= low and index <= high:
+            ann.append(f"{low}:{high}:{t}: {s}")
+    return '\n'.join((indexstr, actions, rel_actions, robot_obs, robot_arm, red, blue, pink, desk, *ann))
 
 def update_frame(value):
     index = int(value)
@@ -66,6 +71,12 @@ for f in tqdm(sorted(os.listdir('.'))):
         idnum = m.group(1)
         idnums.append(idnum)
 
+
+# Read annotations:
+annotations = np.load("lang_annotations/auto_lang_ann.npy", allow_pickle=True).item()
+annotations = list(zip(annotations["info"]["indx"], annotations["language"]["task"], annotations["language"]["ann"]))
+
+
 # Arrange the windows:
 row = [ tk.Frame(root) for i in range(4) ]
 frm = [ [ tk.Frame(row[0]) for i in range(3) ],
@@ -94,14 +105,14 @@ tklabels = [
     tk.Label(frm[1][2]), # , image=depth_tactile1),
     tk.Label(frm[1][3], text="depth_tactile2"),
     tk.Label(frm[1][3]), # , image=depth_tactile2),
-    tk.Label(frm[2][0], text='', justify="left", anchor="nw")
+    tk.Label(frm[3][0], text='', justify="left", anchor="nw")
 ]
 
 for lbl in tklabels:
     lbl.pack()
 
 # Slider:
-slider = tk.Scale(frm[3][0], from_=0, to=len(idnums)-1, orient=tk.HORIZONTAL, command=update_frame, length=500, resolution=1.0)
+slider = tk.Scale(frm[2][0], from_=0, to=len(idnums)-1, orient=tk.HORIZONTAL, command=update_frame, length=500, resolution=1.0)
 slider.pack()
 
 # Initialize with first frame
