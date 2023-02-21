@@ -75,7 +75,6 @@ for f in tqdm(sorted(os.listdir('.'))):
         idnums.append(idnum)
 
 
-# Read annotations:
 if os.path.exists('lang_annotations/auto_lang_ann.npy'):
     annotations = np.load('lang_annotations/auto_lang_ann.npy', allow_pickle=True).item()
     annotations = sorted(list(zip(annotations['info']['indx'], annotations['language']['task'], annotations['language']['ann'])))
@@ -121,11 +120,10 @@ with gr.Blocks() as demo:
         slider = gr.Slider(label="slider", minimum=0, maximum=len(idnums)-1, step=1, value=0)
  
     def update_frame(value):
-        print(value)
         index = int(value)
         idnum = idnums[index]
         npz = np.load(f"episode_{idnum}.npz", allow_pickle=True)
-        return ((array2image(npz['rgb_static']), 
+        return (array2image(npz['rgb_static']), 
                 array2image(npz['depth_static']),
                 array2image(npz['rgb_gripper']), 
                 array2image(npz['depth_gripper']),
@@ -133,10 +131,11 @@ with gr.Blocks() as demo:
                 array2image(npz['rgb_tactile'][:,:,3:6]),
                 array2image(npz['depth_tactile'][:,:,0]),
                 array2image(npz['depth_tactile'][:,:,1]),
-                numeric_fields(npz, idnum)))
+                numeric_fields(npz, idnum))
 
     slider.change(fn=update_frame, inputs=[slider], outputs=[rgb_static, depth_static, rgb_gripper, depth_gripper, rgb_tactile1, rgb_tactile2, depth_tactile1, depth_tactile2, text_info])
-    demo.load(lambda: 0, inputs=None, outputs=slider)
+    demo.load(lambda: 1, inputs=None, outputs=slider)
+
 
 demo.launch(server_name="0.0.0.0")
 

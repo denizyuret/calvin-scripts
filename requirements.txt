@@ -1,0 +1,5 @@
+pandas
+gradio
+tqdm
+numpy
+Pillow
