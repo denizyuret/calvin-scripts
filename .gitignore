@@ -4,7 +4,7 @@ foo*
 *.err
 *.out
 *.tsv
-*.tsv.gz
+*.gz
 *.desc
 
 # Byte-compiled / optimized / DLL files
