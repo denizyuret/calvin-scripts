@@ -21,17 +21,19 @@ def array2image(a):
 def numeric_fields(npz, idnum):
     index = int(idnum)
     scene = ''
-    for (key, (low, high)) in scenes.items():
-        if index >= low and index <= high:
-            scene = key[-1]
-            break
+    if scenes:
+        for (key, (low, high)) in scenes.items():
+            if index >= low and index <= high:
+                scene = key[-1]
+                break
     ep_start = ''
     ep_end = ''
-    for (low, high) in episodes:
-        if index >= low and index <= high:
-            ep_start = low
-            ep_end = high
-            break
+    if episodes:
+        for (low, high) in episodes:
+            if index >= low and index <= high:
+                ep_start = low
+                ep_end = high
+                break
     indexstr = f"frame: {idnum} ({scene}:{ep_start}:{ep_end})"
     
     a = npz['actions']
@@ -48,18 +50,19 @@ def numeric_fields(npz, idnum):
     desk = f"door:{d[0]: 5.2f} drawer:{d[1]: 5.2f} button:{d[2]: 5.2f} switch:{d[3]: 5.2f} bulb:{d[4]: 5.2f} green:{d[5]: 5.2f}"
     ann = []
     prev = ''
-    for n, ((low, high), t, s) in enumerate(annotations):
-        if index > high:
-            prev = f"<{low}:{high}:{t}: {s}"
-        elif index >= low and index <= high:
-            if not ann and prev:
-                ann.append(prev)
-            ann.append(f"={low}:{high}:{t}: {s}")
-        elif index < low:
-            if not ann and prev:
-                ann.append(prev)
-            ann.append(f">{low}:{high}:{t}: {s}")
-            break
+    if annotations:
+        for n, ((low, high), t, s) in enumerate(annotations):
+            if index > high:
+                prev = f"<{low}:{high}:{t}: {s}"
+            elif index >= low and index <= high:
+                if not ann and prev:
+                    ann.append(prev)
+                ann.append(f"={low}:{high}:{t}: {s}")
+            elif index < low:
+                if not ann and prev:
+                    ann.append(prev)
+                ann.append(f">{low}:{high}:{t}: {s}")
+                break
             
     return '\n'.join((indexstr, actions, rel_actions, robot_obs, robot_arm, red, blue, pink, desk, *ann))
 
@@ -97,16 +100,29 @@ for f in tqdm(sorted(os.listdir('.'))):
 
 
 # Read annotations:
-annotations = np.load("lang_annotations/auto_lang_ann.npy", allow_pickle=True).item()
-annotations = sorted(list(zip(annotations['info']['indx'], annotations['language']['task'], annotations['language']['ann'])))
+if os.path.exists('lang_annotations/auto_lang_ann.npy'):
+    annotations = np.load('lang_annotations/auto_lang_ann.npy', allow_pickle=True).item()
+    annotations = sorted(list(zip(annotations['info']['indx'], annotations['language']['task'], annotations['language']['ann'])))
+else:
+    print('lang_annotations/auto_lang_ann.npy does not exist, annotations will not be displayed', file=sys.stderr)
+    annotations = false
 
 
 # Read episode boundaries:
-episodes = sorted(np.load('ep_start_end_ids.npy', allow_pickle=True).tolist())
+if os.path.exists('ep_start_end_ids.npy'):
+    episodes = sorted(np.load('ep_start_end_ids.npy', allow_pickle=True).tolist())
+else:
+    print('ep_start_end_ids.npy does not exist, episode boundaries will not be displayed', file=sys.stderr)
+    episodes = false
 
 
 # Read scene info:
-scenes = np.load('scene_info.npy', allow_pickle=True).item()
+if os.path.exists('scene_info.npy'):
+    scenes = np.load('scene_info.npy', allow_pickle=True).item()
+else:
+    print('scene_info.npy does not exist, scene ids will not be displayed', file=sys.stderr)
+    scenes = False
+
 
 # Arrange the windows:
 row = [ tk.Frame(root) for i in range(4) ]
