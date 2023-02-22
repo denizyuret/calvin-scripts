@@ -66,9 +66,23 @@ def numeric_fields(npz, idnum):
             
     return '\n'.join((indexstr, actions, rel_actions, robot_obs, robot_arm, red, blue, pink, desk, *ann))
 
-def update_frame(value):
+
+def on_entry(event):
+    index = int(entry.get())
+    idnum = f"{index:07d}"
+    if idnum in iddict:
+        update_frame(idnum)
+        idpos = iddict[idnum]
+        scale.set(idpos)
+
+def on_scale(value):
     index = int(value)
     idnum = idnums[index]
+    entry.delete(0, tk.END)
+    entry.insert(0, idnum)
+    update_frame(idnum)
+
+def update_frame(idnum):
     npz = np.load(f"episode_{idnum}.npz", allow_pickle=True)
     tklabels[1].image = array2image(npz['rgb_static'])
     tklabels[1].config(image = tklabels[1].image)
@@ -92,11 +106,14 @@ def update_frame(value):
 
 # Read filenames:
 idnums = []
+iddict = {}
 for f in tqdm(sorted(os.listdir('.'))):
     m = re.match(r"episode_(\d{7})\.npz", f)
     if m is not None:
         idnum = m.group(1)
+        iddict[idnum] = len(idnums)
         idnums.append(idnum)
+
 
 
 # Read annotations:
@@ -158,12 +175,19 @@ tklabels = [
 for lbl in tklabels:
     lbl.pack()
 
-# Slider:
-slider = tk.Scale(frm[2][0], from_=0, to=len(idnums)-1, orient=tk.HORIZONTAL, command=update_frame, length=500, resolution=1.0, showvalue=False)
-slider.pack()
+# Entry box:
+entry = tk.Entry(frm[2][0], width=7)
+entry.bind("<Return>", on_entry)
+entry.pack(side="left")
+
+# Scale:
+scale = tk.Scale(frm[2][0], from_=0, to=len(idnums)-1, orient=tk.HORIZONTAL, command=on_scale, length=430, resolution=1.0, showvalue=False)
+scale.pack(side="left")
 
 # Initialize with first frame
-update_frame(0)
+scale.set(0)
+entry.insert(0,idnums[0])
+update_frame(idnums[0])
 
 # Start the main event loop
 tk.mainloop()
