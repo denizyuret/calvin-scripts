@@ -1,14 +1,11 @@
-# Usage: cd /datasets/calvin/D/validation; python calvin_visualize.py
-
 import sys
 import os
 import re
 import pdb
-import tkinter as tk
 import numpy as np
-from PIL import Image, ImageTk
+from PIL import Image
 from tqdm import tqdm
-root = tk.Tk()
+import gradio as gr
 
 def float2uint8(a):
     return (255 * (a - a.min()) / (a.max() - a.min() + sys.float_info.epsilon)).astype(np.uint8)
@@ -16,7 +13,7 @@ def float2uint8(a):
 def array2image(a):
     if np.issubdtype(a.dtype, np.floating):
         a = float2uint8(a)
-    return ImageTk.PhotoImage(Image.fromarray(a))
+    return Image.fromarray(a)
 
 def numeric_fields(npz, idnum):
     index = int(idnum)
@@ -67,43 +64,6 @@ def numeric_fields(npz, idnum):
     return '\n'.join((indexstr, actions, rel_actions, robot_obs, robot_arm, red, blue, pink, desk, *ann))
 
 
-def on_entry(event):
-    index = int(entry.get())
-    idnum = f"{index:07d}"
-    if idnum in iddict:
-        update_frame(idnum)
-        idpos = iddict[idnum]
-        scale.set(idpos)
-
-def on_scale(value):
-    index = int(value)
-    idnum = idnums[index]
-    entry.delete(0, tk.END)
-    entry.insert(0, idnum)
-    update_frame(idnum)
-
-def update_frame(idnum):
-    npz = np.load(f"episode_{idnum}.npz", allow_pickle=True)
-    tklabels[1].image = array2image(npz['rgb_static'])
-    tklabels[1].config(image = tklabels[1].image)
-    tklabels[3].image = array2image(npz['depth_static'])
-    tklabels[3].config(image = tklabels[3].image)
-    tklabels[5].image = array2image(npz['rgb_gripper'])
-    tklabels[5].config(image = tklabels[5].image)
-    tklabels[7].image = array2image(npz['depth_gripper'])
-    tklabels[7].config(image = tklabels[7].image)
-    tklabels[9].image = array2image(npz['rgb_tactile'][:,:,0:3])
-    tklabels[9].config(image = tklabels[9].image)
-    tklabels[11].image = array2image(npz['rgb_tactile'][:,:,3:6])
-    tklabels[11].config(image = tklabels[11].image)
-    tklabels[13].image = array2image(npz['depth_tactile'][:,:,0])
-    tklabels[13].config(image = tklabels[13].image)
-    tklabels[15].image = array2image(npz['depth_tactile'][:,:,1])
-    tklabels[15].config(image = tklabels[15].image)
-    tklabels[16].text = numeric_fields(npz, idnum)
-    tklabels[16].config(text = tklabels[16].text)
-
-
 # Read filenames:
 idnums = []
 iddict = {}
@@ -115,14 +75,13 @@ for f in tqdm(sorted(os.listdir('.'))):
         idnums.append(idnum)
 
 
-
 # Read annotations:
 if os.path.exists('lang_annotations/auto_lang_ann.npy'):
     annotations = np.load('lang_annotations/auto_lang_ann.npy', allow_pickle=True).item()
     annotations = sorted(list(zip(annotations['info']['indx'], annotations['language']['task'], annotations['language']['ann'])))
 else:
     print('lang_annotations/auto_lang_ann.npy does not exist, annotations will not be displayed', file=sys.stderr)
-    annotations = false
+    annotations = False
 
 
 # Read episode boundaries:
@@ -130,7 +89,7 @@ if os.path.exists('ep_start_end_ids.npy'):
     episodes = sorted(np.load('ep_start_end_ids.npy', allow_pickle=True).tolist())
 else:
     print('ep_start_end_ids.npy does not exist, episode boundaries will not be displayed', file=sys.stderr)
-    episodes = false
+    episodes = False
 
 
 # Read scene info:
@@ -141,53 +100,44 @@ else:
     scenes = False
 
 
-# Arrange the windows:
-row = [ tk.Frame(root) for i in range(4) ]
-frm = [ [ tk.Frame(row[0]) for i in range(3) ],
-        [ tk.Frame(row[1]) for i in range(4) ],
-        [ tk.Frame(row[2]) for i in range(1) ],
-        [ tk.Frame(row[3]) for i in range(1) ] ]
-for i in range(4):
-    row[i].pack()
-    for j in range(len(frm[i])):
-        frm[i][j].pack(side='left')
+with gr.Blocks() as demo:
+    with gr.Row():
+        rgb_static = gr.Image(interactive=False,label="rgb_static")
+        depth_static = gr.Image(interactive=False,label="depth_static")
+        rgb_gripper = gr.Image(interactive=False,label="rgb_gripper")
+        depth_gripper = gr.Image(interactive=False,label="depth_gripper")
 
-tklabels = [
-    tk.Label(frm[0][0], text='rgb_static'),
-    tk.Label(frm[0][0]), #, image=rgb_static),
-    tk.Label(frm[0][1], text='depth_static'),
-    tk.Label(frm[0][1]), # , image=depth_static),
-    tk.Label(frm[0][2], text='rgb_gripper'),
-    tk.Label(frm[0][2]), # , image=rgb_gripper),
-    tk.Label(frm[0][2], text='depth_gripper'),
-    tk.Label(frm[0][2]), # , image=depth_gripper),
-    tk.Label(frm[1][0], text='rgb_tactile1'),
-    tk.Label(frm[1][0]), # , image=rgb_tactile1),
-    tk.Label(frm[1][1], text='rgb_tactile2'),
-    tk.Label(frm[1][1]), # , image=rgb_tactile2),
-    tk.Label(frm[1][2], text='depth_tactile1'),
-    tk.Label(frm[1][2]), # , image=depth_tactile1),
-    tk.Label(frm[1][3], text='depth_tactile2'),
-    tk.Label(frm[1][3]), # , image=depth_tactile2),
-    tk.Label(frm[3][0], text='', justify='left', anchor='nw')
-]
+    with gr.Row():
+        rgb_tactile1 = gr.Image(interactive=False,label="rgb_tactile1")
+        rgb_tactile2 = gr.Image(interactive=False,label="rgb_tactile2")
+        depth_tactile1 = gr.Image(interactive=False,label="depth_tactile1")
+        depth_tactile2 = gr.Image(interactive=False,label="depth_tactile2")
+    
+    with gr.Row():
+        text_info = gr.Text(label="text")
 
-for lbl in tklabels:
-    lbl.pack()
 
-# Entry box:
-entry = tk.Entry(frm[2][0], width=7)
-entry.bind("<Return>", on_entry)
-entry.pack(side="left")
+    with gr.Row():
+        slider = gr.Slider(label="slider", minimum=0, maximum=len(idnums)-1, step=1, value=0)
+ 
+    def update_frame(value):
+        print(value)
+        index = int(value)
+        idnum = idnums[index]
+        npz = np.load(f"episode_{idnum}.npz", allow_pickle=True)
+        return ((array2image(npz['rgb_static']), 
+                array2image(npz['depth_static']),
+                array2image(npz['rgb_gripper']), 
+                array2image(npz['depth_gripper']),
+                array2image(npz['rgb_tactile'][:,:,0:3]),
+                array2image(npz['rgb_tactile'][:,:,3:6]),
+                array2image(npz['depth_tactile'][:,:,0]),
+                array2image(npz['depth_tactile'][:,:,1]),
+                numeric_fields(npz, idnum)))
 
-# Scale:
-scale = tk.Scale(frm[2][0], from_=0, to=len(idnums)-1, orient=tk.HORIZONTAL, command=on_scale, length=430, resolution=1.0, showvalue=False)
-scale.pack(side="left")
+    slider.change(fn=update_frame, inputs=[slider], outputs=[rgb_static, depth_static, rgb_gripper, depth_gripper, rgb_tactile1, rgb_tactile2, depth_tactile1, depth_tactile2, text_info])
+    demo.load(lambda: 0, inputs=None, outputs=slider)
 
-# Initialize with first frame
-scale.set(0)
-entry.insert(0,idnums[0])
-update_frame(idnums[0])
+demo.launch(server_name="0.0.0.0")
 
-# Start the main event loop
-tk.mainloop()
+slider.change()
