@@ -22,6 +22,8 @@
 
 * `python calvin_visualize.py`: Visualize a series of frames in the current directory, a more detailed version of the original visualize_dataset.py.
 
+* `calvin_controller_coordinates.py` and `calvin_controller_regression.py`: Scripts I tried to discover the controller (button etc) coordinates with.
+
 
 # calvin-files
 
@@ -143,6 +145,7 @@ Notes: A and D have the door at the same location (to the left of the desk), B a
 slightly off. All scenes have door at y=0, z=0.53. The tcp.x and door.x have reverse
 directions. The range for door.x is 0.00:30.00. TODO: Check the B-C difference!
 
+```
 door in A:         range=[-0.002359:0.283729]
 tcpx = 0.04-doorx  range=[-0.290013:0.111992]
 tcpy = 0.00        range=[-0.083748:0.063747]
@@ -162,7 +165,7 @@ door in D:         range=[-0.002078:0.281810]
 tcpx = 0.04-doorx  range=[-0.312252:0.110304]
 tcpy = 0.00        range=[-0.062834:0.041952]
 tcpz = 0.53        range=[ 0.485743:0.611444]
-
+```
 
 ### drawer:
 
@@ -170,6 +173,7 @@ Notes: All scenes have drawer at z=0.36. A and C have it at x=0.10, B and D have
 x=0.18. Drawer operates on the y axis with the door coordinate the opposite of the y
 coordinate. The range of door movement is 0.00:0.22.
 
+```
 drawer in A:        range=[-0.000782:0.220825]
 tcpx = 0.10         range=[-0.009829:0.172383]
 tcpy = -0.20-drawer range=[-0.455591:-0.188756]
@@ -189,6 +193,7 @@ drawer in D:        range=[-0.000900:0.220821]
 tcpx = 0.18         range=[ 0.095772:0.253271]
 tcpy = -0.20-drawer range=[-0.463522:-0.193341]
 tcpz = 0.36         range=[ 0.296918:0.513985]
+```
 
 
 ### switch:
@@ -201,6 +206,7 @@ gripper has to be under or over the switch to push it up or down, which adds an 
 because of the thickness. Maybe can do better with access to simulator code. We also need to
 know which point tcp refers to exactly.
 
+```
 switch in A:           range=[-0.001835:0.088369]
 tcpx = 0.26            range=[ 0.243142:0.306039]
 tcpy = 0.0296+0.4168s  range=[-0.008334:0.084772]
@@ -220,6 +226,7 @@ switch in D:           range=[-0.002888: 0.088266]
 tcpx = 0.28            range=[ 0.250364: 0.317681]
 tcpy = 0.0238+0.4091s  range=[-0.007851: 0.074466]
 tcpz = 0.5467+0.8044s  range=[ 0.496080: 0.638987]
+```
 
 
 ### button:
@@ -231,6 +238,7 @@ button moves on the Z axis, its range is small [0.00-0.03]. The button coordinat
 opposite direction from the Z coordinate. Interestingly the coefficient does not seem to be
 -1.0, so the button state is not measured in meters?
 
+```
 button in A:           range=[ 0.000060: 0.032333]
 tcpx = -0.27           range=[-0.306333:-0.163803]
 tcpy = -0.11           range=[-0.159289:-0.070262]
@@ -250,3 +258,4 @@ button in D:           range=[ 0.000064: 0.033721]
 tcpx = -0.12           range=[-0.162780:-0.041127]
 tcpy = -0.12           range=[-0.155131:-0.082582]
 tcpz = 0.5158-1.76b    range=[ 0.465889: 0.567390]
+```

@@ -6,6 +6,7 @@ foo*
 *.tsv
 *.gz
 *.desc
+calvin_env/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

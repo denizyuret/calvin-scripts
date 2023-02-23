@@ -1,3 +1,11 @@
+2023-02-23  dyuret  <dyuret@login03.kuacc.ku.edu.tr>
+
+	* TODO:
+	- validate rel_actions formula
+	- extract tactile pixels
+	- see if controller coordinates are in the simulator: https://github.com/mees/calvin_env
+	- try mlp on action classification with different inputs
+
 2023-02-22  dyuret  <dyuret@login02.kuacc.ku.edu.tr>
 
 	* controller-coordinates: door, drawer, button, switch.
