@@ -8,7 +8,7 @@
 
 * `calvin_scene_info.py`: Read and print info in the scene_info.npy, ep_lens.npy, ep_start_end_ids.npy files in each calvin data directory.
 
-* `calvin_extract_language.py`: Print all the unique task_ids and language annotations in the dataset. There are 34 unique task ids and 389 unique annotations.
+* `calvin_extract_unique_annotations.py`: Print all the unique task_ids and language annotations in the dataset. There are 34 unique task ids and 389 unique annotations.
 
 * `zcat D-validation.tsv.gz | python calvin_diffs.py`: prints out the differences with the previous line for all but the first line.
 
@@ -23,6 +23,10 @@
 * `python calvin_visualize.py`: Visualize a series of frames in the current directory, a more detailed version of the original visualize_dataset.py.
 
 * `calvin_controller_coordinates.py`, `calvin_controller_regression.py`, `calvin_controller_xyz.py`, `calvin_controller_check.py`: Scripts I tried to discover, output and check the controller (button etc) coordinates with.
+
+* `calvin_extract_tactile.py`: Extract the mean pixels of `depth_tactile` (2) and `rgb_tactile` images. Saved as e.g. `D-validation-tactile.tsv.gz`.
+
+* `python calvin_extract_language.py auto_lang_ann.npy`: extract start, end, task, instruction triples in tab separated format
 
 
 ## calvin-files
@@ -154,3 +158,18 @@ For details of the coordinate calculation see calvin_controller_xyz.md and calvi
 10. switch.x
 11. switch.y
 12. switch.z
+
+
+## calvin-controller-coordinates
+
+The fields in the output of the calvin_extract_tactile.py script (files like `D-validation-tactile.tsv.gz`):
+
+00. idnum
+01. depth_tactile1
+02. depth_tactile2
+03. rgb_tactile1_r
+04. rgb_tactile1_g
+05. rgb_tactile1_b
+06. rgb_tactile2_r
+07. rgb_tactile2_g
+08. rgb_tactile2_b
