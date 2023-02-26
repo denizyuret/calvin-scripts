@@ -160,7 +160,7 @@ For details of the coordinate calculation see calvin_controller_xyz.md and calvi
 12. switch.z
 
 
-## calvin-controller-coordinates
+## calvin-tactile-coordinates
 
 The fields in the output of the calvin_extract_tactile.py script (files like `D-validation-tactile.tsv.gz`):
 
