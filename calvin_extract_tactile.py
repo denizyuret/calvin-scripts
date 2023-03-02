@@ -16,9 +16,9 @@ for f in tqdm(sorted(os.listdir('.'))):
         rgb_tactile = data.get('rgb_tactile')
         print(idnum, end='')
         for i in range(2):
-            r = depth_tactile[:,:,i].mean()
+            r = depth_tactile[:,:,i].mean() * 100.0
             print(f"\t{r:g}", end='')
         for i in range(6):
-            r = rgb_tactile[:,:,i].mean()
+            r = rgb_tactile[:,:,i].mean() / 255.0
             print(f"\t{r:g}", end='')
         print('')

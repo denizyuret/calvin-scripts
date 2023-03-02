@@ -12,15 +12,22 @@ def loaddata(prefix):
     with gzip.open(prefix + '-controllers.tsv.gz', 'rt') as f:
         cont = np.loadtxt(f, delimiter='\t', dtype='float32')
         assert np.array_equal(data[:,0], cont[:,0]), 'cont indices do not match'
-    with gzip.open(prefix + '-tactile.tsv.gz', 'rt') as f:
+    with gzip.open(prefix + '-tactile2.tsv.gz', 'rt') as f:
         tact = np.loadtxt(f, delimiter='\t', dtype='float32')
         assert np.array_equal(data[:,0], tact[:,0]), 'tact indices do not match'
     data = np.concatenate((data, cont[:,1:], tact[:,1:]), axis=1)
+    data = normalize(data)
     pos2id = data[:,0].astype(int)
     id2pos = np.full(1+max(pos2id), -1)
     for (pos, id) in enumerate(pos2id):
         id2pos[id] = pos
     return data, pos2id, id2pos
+
+
+def normalize(data):
+    data[:,32:34] = data[:,32:34] * 10.0  # button and switch
+    data[:,21] = data[:,21] * 10.0        # gripper opening
+    return data
 
 
 def loadlang(prefix):

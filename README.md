@@ -26,6 +26,8 @@
 
 * `calvin_extract_tactile.py`: Extract the mean pixels of `depth_tactile` (2) and `rgb_tactile` images. Saved as e.g. `D-validation-tactile.tsv.gz`.
 
+* `calvin_fix_tactile.py`: The initial version of extract_tactile did not normalize the values, depth pixels were too small, rgb pixels were too large. I fixed these using this script, and named the normalized files e.g. `D-validation-tactile2.tsv.gz`. The extract script is also fixed now and normalizes.
+
 * `python calvin_extract_language.py auto_lang_ann.npy`: extract start, end, task, instruction triples in tab separated format
 
 
@@ -162,7 +164,7 @@ For details of the coordinate calculation see calvin_controller_xyz.md and calvi
 
 ## calvin-tactile-coordinates
 
-The fields in the output of the calvin_extract_tactile.py script (files like `D-validation-tactile.tsv.gz`):
+The fields in the output of the calvin_extract_tactile.py script (files like `D-validation-tactile2.tsv.gz`). These give the average pixel of the tactile images. The depth pixels were normalized with x100, the rgb pixels were normalized with /255.0.
 
 00. idnum
 01. depth_tactile1
