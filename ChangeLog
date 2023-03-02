@@ -1,3 +1,24 @@
+2023-03-02  dyuret  <dyuret@login03.kuacc.ku.edu.tr>
+
+	* wandb: Emre Can notes:
+	Accuracy Metric code-line: https://github.com/emrecanacikgoz/robot-language/blob/2520cef611b115eb62938dc8859be0738f0a4946/blind_robot/models/mlp.py#L82
+	training epoch ending function: https://github.com/emrecanacikgoz/robot-language/blob/2520cef611b115eb62938dc8859be0738f0a4946/blind_robot/models/mlp.py#L88
+	my wandb logger: https://github.com/emrecanacikgoz/robot-language/blob/2520cef611b115eb62938dc8859be0738f0a4946/main.py#L93
+	project argumanı yeni proje açıyor hocam
+	name argumanı ilgili projenin içindeki run adı
+	aynı proje için several run yapıcaksanız name'i değiştirebilirsiniz
+
+	* TODO:
+	- load checkpoint
+	- measure val/trn loss
+	- measure val/trn acc
+	- tensorboard
+	- wandb: when do you get a new run?
+	- visualize training curves
+	- normalization
+	- overfitting
+
+
 2023-02-23  dyuret  <dyuret@login03.kuacc.ku.edu.tr>
 
 	* TODO:

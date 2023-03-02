@@ -8,6 +8,10 @@ foo*
 *.desc
 data/
 lightning_logs/
+mees-calvin/
+emrecan-robot-language/
+model/wandb/
+model/mlp_project/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
