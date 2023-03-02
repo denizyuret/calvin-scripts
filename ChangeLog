@@ -10,13 +10,13 @@
 
 	* TODO:
 	- load checkpoint
-	- measure val/trn loss
-	- measure val/trn acc
+	+ measure val/trn loss
+	+ measure val/trn acc
 	- tensorboard
-	- wandb: when do you get a new run?
-	- visualize training curves
-	- normalization
-	- overfitting
+	+ wandb: when do you get a new run?
+	+ visualize training curves
+	+ normalization
+	x overfitting: usual methods did not work, try feature selection, try delta of scene coordinates, delta of robot obs, lower frame rate, multiple frames.
 
 
 2023-02-23  dyuret  <dyuret@login03.kuacc.ku.edu.tr>
