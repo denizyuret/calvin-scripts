@@ -33,10 +33,11 @@ class LitMLP(pl.LightningModule):
 
 def train(pre = '../data/D'):
     global mlp
-    trn = DataLoader(calvindataset1(prefix = pre + '-training'), batch_size=128, shuffle=True, num_workers=12)
-    val = DataLoader(calvindataset1(prefix = pre + '-validation'), batch_size=128, shuffle=False, num_workers=12)
+    torch.set_float32_matmul_precision('medium')
+    trn = DataLoader(calvindataset1(prefix = pre + '-training'), batch_size=256, shuffle=True, num_workers=12)
+    val = DataLoader(calvindataset1(prefix = pre + '-validation'), batch_size=256, shuffle=False, num_workers=12)
     xsize = trn.dataset.tensors[0].shape[1]
     ysize = 1 + max(trn.dataset.tensors[1]).item()
     mlp = LitMLP((xsize, 128, ysize))
-    trainer = pl.Trainer(accelerator='gpu', devices=1)
-    trainer.fit(model=mlp, train_dataloaders=trn)
+    trainer = pl.Trainer(accelerator='gpu') # , devices=1)
+    trainer.fit(mlp, trn, val)

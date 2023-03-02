@@ -1,3 +1,4 @@
+import sys
 import numpy as np
 import torch
 import gzip
@@ -6,11 +7,14 @@ from torch.utils.data import TensorDataset
 
 def loaddata(prefix):
     with gzip.open(prefix + '.tsv.gz', 'rt') as f:
+        print(f, file=sys.stderr)
         data = np.loadtxt(f, delimiter='\t', dtype='float32') # not using dtype=dtype_data: it makes a 1-D record array instead of 2-D
     with gzip.open(prefix + '-controllers.tsv.gz', 'rt') as f:
+        print(f, file=sys.stderr)
         cont = np.loadtxt(f, delimiter='\t', dtype='float32')
         assert np.array_equal(data[:,0], cont[:,0]), 'cont indices do not match'
     with gzip.open(prefix + '-tactile.tsv.gz', 'rt') as f:
+        print(f, file=sys.stderr)
         tact = np.loadtxt(f, delimiter='\t', dtype='float32')
         assert np.array_equal(data[:,0], tact[:,0]), 'tact indices do not match'
     data = np.concatenate((data, cont[:,1:], tact[:,1:]), axis=1)
@@ -23,6 +27,7 @@ def loaddata(prefix):
 
 def loadlang(prefix):
     with gzip.open(prefix + '-lang.tsv.gz', 'rt') as f:
+        print(f, file=sys.stderr)
         lang = np.loadtxt(f, delimiter='\t', dtype=dtype_lang)
     task2int = {}
     int2task = []
