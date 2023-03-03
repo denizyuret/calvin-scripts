@@ -35,16 +35,14 @@ def loadlang(prefix):
     with gzip.open(prefix + '-lang.tsv.gz', 'rt') as f:
         lang = np.loadtxt(f, delimiter='\t', dtype=dtype_lang)
     task2int = {}
-    int2task = []
+    for (i,task) in enumerate(int2task):
+        task2int[task] = i
     for task in lang['task']:
-        if task not in task2int:
-            task2int[task] = len(task2int)
-            int2task.append(task)
+        assert task in task2int, 'task not found'
     return lang, task2int, int2task
 
 
 def calvindataset1(prefix='../data/debug-training', features=range(1,74), window=32):
-    global data #DBG
     data,pos2id,id2pos = loaddata(prefix)
     lang,task2int,int2task = loadlang(prefix)
     p = []
@@ -58,6 +56,20 @@ def calvindataset1(prefix='../data/debug-training', features=range(1,74), window
     y = torch.tensor(y)
     return TensorDataset(x,y)
 
+
+def calvindataset2(prefix='../data/debug-training', features=range(1,74), window=32):
+    data,pos2id,id2pos = loaddata(prefix)
+    lang,task2int,int2task = loadlang(prefix)
+    x = []
+    y = []
+    for (i,j,task,annot) in lang:
+        taskid = task2int[task]
+        k = id2pos[j]
+        x.append(np.ravel(data[np.ix_(range(k-window+1,k+1), features)]))
+        y.append(taskid)
+    x = torch.tensor(np.stack(x))
+    y = torch.tensor(y)
+    return TensorDataset(x,y)
 
 dtype_lang = [
     ('start', int),
@@ -158,3 +170,40 @@ arm_range = range(22,30)
 scene_range = range(30,54)
 controller_range = range(54,66)
 tactile_range = range(66,74)
+
+int2task = [
+    'close_drawer',
+    'lift_blue_block_drawer',
+    'lift_blue_block_slider',
+    'lift_blue_block_table',
+    'lift_pink_block_drawer',
+    'lift_pink_block_slider',
+    'lift_pink_block_table',
+    'lift_red_block_drawer',
+    'lift_red_block_slider',
+    'lift_red_block_table',
+    'move_slider_left',
+    'move_slider_right',
+    'open_drawer',
+    'place_in_drawer',
+    'place_in_slider',
+    'push_blue_block_left',
+    'push_blue_block_right',
+    'push_into_drawer',
+    'push_pink_block_left',
+    'push_pink_block_right',
+    'push_red_block_left',
+    'push_red_block_right',
+    'rotate_blue_block_left',
+    'rotate_blue_block_right',
+    'rotate_pink_block_left',
+    'rotate_pink_block_right',
+    'rotate_red_block_left',
+    'rotate_red_block_right',
+    'stack_block',
+    'turn_off_led',
+    'turn_off_lightbulb',
+    'turn_on_led',
+    'turn_on_lightbulb',
+    'unstack_block'
+]

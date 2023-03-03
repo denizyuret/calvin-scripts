@@ -9,7 +9,7 @@ for line in sys.stdin:
     nfields = np.loadtxt(StringIO(line), delimiter='\t')
     nfields[1:3] = nfields[1:3] * 100.0
     nfields[3:9] = nfields[3:9] / 255.0
-    print(fields[0], end='\t')
+    print(fields[0], end='')
     for f in nfields[1:]:
         print(f"\t{f:g}", end='')
     print('')
