@@ -34,6 +34,7 @@ def loadlang(prefix):
     print(f"Loading {prefix}-lang", file=sys.stderr)
     with gzip.open(prefix + '-lang.tsv.gz', 'rt') as f:
         lang = np.loadtxt(f, delimiter='\t', dtype=dtype_lang)
+    lang.sort(key=lambda x: x[1])
     task2int = {}
     for (i,task) in enumerate(int2task):
         task2int[task] = i
@@ -42,34 +43,66 @@ def loadlang(prefix):
     return lang, task2int, int2task
 
 
+# Predict task from a single frame (picked anywhere from the last 32 frames associated with task)
 def calvindataset1(prefix='../data/debug-training', features=range(1,74), window=32):
     data,pos2id,id2pos = loaddata(prefix)
     lang,task2int,int2task = loadlang(prefix)
     p = []
     y = []
-    for (i,j,task,annot) in lang:
+    idx = []
+    for (i,j,task,annot) in lang: # i,j,k frame ids. p is an index into data.
         taskid = task2int[task]
         for k in range(j-window+1,j+1):
             p.append(id2pos[k])
             y.append(taskid)
+            idx.append(k)
     x = torch.tensor(data[np.ix_(p,features)])
     y = torch.tensor(y)
-    return TensorDataset(x,y)
+    idx = torch.tensor(idx)
+    return TensorDataset(x,y,idx)
 
 
+# Predict annotation from the last 32 frames (out of 64 associated with the annotation)
 def calvindataset2(prefix='../data/debug-training', features=range(1,74), window=32):
     data,pos2id,id2pos = loaddata(prefix)
     lang,task2int,int2task = loadlang(prefix)
     x = []
     y = []
+    idx = []
     for (i,j,task,annot) in lang:
         taskid = task2int[task]
-        k = id2pos[j]
-        x.append(np.ravel(data[np.ix_(range(k-window+1,k+1), features)]))
+        p = id2pos[j]
+        x.append(np.ravel(data[np.ix_(range(p-window+1,p+1), features)]))
         y.append(taskid)
+        idx.append(j)
     x = torch.tensor(np.stack(x))
     y = torch.tensor(y)
-    return TensorDataset(x,y)
+    idx = torch.tensor(idx)
+    return TensorDataset(x,y,idx)
+
+
+# Predict annotation from 2 successive frames (picked anywhere from the last 32 frames associated with task)
+def calvindataset3(prefix='../data/debug-training', features=range(1,74), window=32, frames=2):
+    data,pos2id,id2pos = loaddata(prefix)
+    lang,task2int,int2task = loadlang(prefix)
+    p = []
+    y = []
+    idx = []
+    for (i,j,task,annot) in lang:
+        taskid = task2int[task]
+        for k in range(j-window+1,j+1):
+            p.append(id2pos[k])
+            y.append(taskid)
+            idx.append(k)
+    p = np.array(p)
+    x = []
+    for f in range(0, frames):
+        x.append(torch.tensor(data[np.ix_(p-f, features)]))
+    x = torch.cat(x, dim=1)
+    y = torch.tensor(y)
+    idx = torch.tensor(idx)
+    return TensorDataset(x,y,idx)
+
 
 dtype_lang = [
     ('start', int),

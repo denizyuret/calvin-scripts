@@ -21,14 +21,14 @@ def array2image(a):
 def numeric_fields(npz, idnum):
     index = int(idnum)
     scene = ''
-    if scenes:
+    if scenes is not None:
         for (key, (low, high)) in scenes.items():
             if index >= low and index <= high:
                 scene = key[-1]
                 break
     ep_start = ''
     ep_end = ''
-    if episodes:
+    if episodes is not None:
         for (low, high) in episodes:
             if index >= low and index <= high:
                 ep_start = low
@@ -50,7 +50,7 @@ def numeric_fields(npz, idnum):
     desk = f"door:{d[0]: 5.2f} drawer:{d[1]: 5.2f} button:{d[2]: 5.2f} switch:{d[3]: 5.2f} bulb:{d[4]: 5.2f} green:{d[5]: 5.2f}"
     ann = []
     prev = ''
-    if annotations:
+    if annotations is not None:
         for n, ((low, high), t, s) in enumerate(annotations):
             if index > high:
                 prev = f"<{low}:{high}:{t}: {s}"
@@ -63,7 +63,10 @@ def numeric_fields(npz, idnum):
                     ann.append(prev)
                 ann.append(f">{low}:{high}:{t}: {s}")
                 break
-            
+
+    if preds is not None and preds[index] is not None:
+        ann.extend(preds[index])
+
     return '\n'.join((indexstr, actions, rel_actions, robot_obs, robot_arm, red, blue, pink, desk, *ann))
 
 
@@ -107,7 +110,8 @@ def update_frame(idnum):
 # Read filenames:
 idnums = []
 iddict = {}
-for f in tqdm(sorted(os.listdir('.'))):
+print('Reading directory...', file=sys.stderr)
+for f in sorted(os.listdir('.')):
     m = re.match(r"episode_(\d{7})\.npz", f)
     if m is not None:
         idnum = m.group(1)
@@ -118,27 +122,43 @@ for f in tqdm(sorted(os.listdir('.'))):
 
 # Read annotations:
 if os.path.exists('lang_annotations/auto_lang_ann.npy'):
+    print('Reading lang_annotations/auto_lang_ann.npy', file=sys.stderr)
     annotations = np.load('lang_annotations/auto_lang_ann.npy', allow_pickle=True).item()
     annotations = sorted(list(zip(annotations['info']['indx'], annotations['language']['task'], annotations['language']['ann'])))
 else:
     print('lang_annotations/auto_lang_ann.npy does not exist, annotations will not be displayed', file=sys.stderr)
-    annotations = false
+    annotations = None
 
 
 # Read episode boundaries:
 if os.path.exists('ep_start_end_ids.npy'):
+    print('Reading ep_start_end_ids.npy', file=sys.stderr)
     episodes = sorted(np.load('ep_start_end_ids.npy', allow_pickle=True).tolist())
 else:
     print('ep_start_end_ids.npy does not exist, episode boundaries will not be displayed', file=sys.stderr)
-    episodes = false
+    episodes = None
 
 
 # Read scene info:
 if os.path.exists('scene_info.npy'):
+    print('Reading scene_info.npy', file=sys.stderr)
     scenes = np.load('scene_info.npy', allow_pickle=True).item()
 else:
     print('scene_info.npy does not exist, scene ids will not be displayed', file=sys.stderr)
-    scenes = False
+    scenes = None
+
+
+# Read predictions:
+if os.path.exists('/tmp/top5.out'): # TODO: find a better way to input this file, command line arg?
+    print('Reading /tmp/top5.out', file=sys.stderr)
+    preds = np.empty(2500000, dtype=object) # TODO: find smarter way to initialize
+    with open('/tmp/top5.out', 'rt') as f:
+        for line in f:
+            cols = line.split('\t')
+            preds[int(cols[0])] = cols[1:]
+else:
+    print('/tmp/top5.out does not exist, predictions will not be displayed', file=sys.stderr)
+    preds = None
 
 
 # Arrange the windows:
