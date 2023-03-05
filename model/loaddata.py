@@ -34,13 +34,20 @@ def loadlang(prefix):
     print(f"Loading {prefix}-lang", file=sys.stderr)
     with gzip.open(prefix + '-lang.tsv.gz', 'rt') as f:
         lang = np.loadtxt(f, delimiter='\t', dtype=dtype_lang)
-    lang.sort(key=lambda x: x[1])
+    lang.sort(order = 'end')
     task2int = {}
     for (i,task) in enumerate(int2task):
         task2int[task] = i
     for task in lang['task']:
         assert task in task2int, 'task not found'
     return lang, task2int, int2task
+
+dtype_lang = [
+    ('start', int),
+    ('end', int),
+    ('task', object),
+    ('annot', object)
+]
 
 
 # Predict task from a single frame (picked anywhere from the last 32 frames associated with task)
@@ -103,13 +110,6 @@ def calvindataset3(prefix='../data/debug-training', features=range(1,74), window
     idx = torch.tensor(idx)
     return TensorDataset(x,y,idx)
 
-
-dtype_lang = [
-    ('start', int),
-    ('end', int),
-    ('task', object),
-    ('annot', object)
-]
 
 dtype_data = [
     ('idnum', int),  # 00. 

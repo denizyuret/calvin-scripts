@@ -1,15 +1,17 @@
 2023-03-04  dyuret  <dyuret@login03.kuacc.ku.edu.tr>
 
 	* mlp:
-	- 512 hidden 0.5 dropout gives 82% validation accuracy on D for single frame using all features.
-	- Using 2 or 3 frames only increase this less than 1%.
+	+ 512 hidden 0.5 dropout gives 82% validation accuracy on D for single frame using all features.
+	+ Using 2 or 3 frames only increase this less than 1%.
+	+ Visualize the predictions to see what is going on.
 	- See what per-annotation accuracy is using majority voting.
-	- Visualize the predictions to see what is going on, print out confusion matrix.
+	- Print out confusion matrix.
 	- Emphasize the differences using a smart scaled difference functions (careful about episode boundaries and 2pi angle differences).
+	- try tensorboard
 
 	* pl:
-	- forward vs predict_step: do we need both?
-	- wandb init: can we log every run?
+	+ forward vs predict_step: do we need both? forward is needed for predict.
+	+ wandb init: can we log every run? currently starting python every time: need to call wandb.finish() at the end of experiment.
 
 
 2023-03-02  dyuret  <dyuret@login03.kuacc.ku.edu.tr>
