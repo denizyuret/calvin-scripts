@@ -12,6 +12,7 @@ mees-calvin/
 emrecan-robot-language/
 model/wandb/
 model/mlp_project/
+slurm*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

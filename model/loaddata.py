@@ -50,8 +50,34 @@ dtype_lang = [
 ]
 
 
+# This is a generalized version of all our dataset creators:
+# calvindataset1(..., window=32) = calvindataset(..., instances_per_episode=32, context_length=1)
+# calvindataset2(..., window=32) = calvindataset(..., instances_per_episode=1, context_length=32)
+# ... and except for reordering of features:
+# calvindataset3(..., window=32, frames=4) = calvindataset(..., instances_per_episode=32, context_length=4)
+
+def calvindataset(prefix='../data/debug-training', features=range(1,74), instances_per_episode=32, context_length=1):
+    """Turn the last instances_per_episode frames of each episode into instances with features from the last context_length frames."""
+    data,pos2id,id2pos = loaddata(prefix)
+    lang,task2int,int2task = loadlang(prefix)
+    x = []; y = []; idx = []
+    for (i,j,task,annot) in lang: # episode starts at i, ends at j, classified as task.
+        taskid = task2int[task]
+        for k in range(j-instances_per_episode+1, j+1): # we create instances for each of the last n frames of an episode
+            p = id2pos[k] - context_length + 1
+            if p >= 0:
+                idx.append(k)
+                y.append(taskid)
+                x.append(data[np.ix_(range(p, p+context_length), features)].reshape(-1))
+    x = torch.tensor(np.stack(x))
+    y = torch.tensor(y)
+    idx = torch.tensor(idx)
+    return TensorDataset(x,y,idx)
+
+
 # Predict task from a single frame (picked anywhere from the last 32 frames associated with task)
 def calvindataset1(prefix='../data/debug-training', features=range(1,74), window=32):
+    """Deprecated, please use calvindataset(..., instances_per_episode=32, context_length=1)"""
     data,pos2id,id2pos = loaddata(prefix)
     lang,task2int,int2task = loadlang(prefix)
     p = []
@@ -71,6 +97,7 @@ def calvindataset1(prefix='../data/debug-training', features=range(1,74), window
 
 # Predict annotation from the last 32 frames (out of 64 associated with the annotation)
 def calvindataset2(prefix='../data/debug-training', features=range(1,74), window=32):
+    """Deprecated, please use calvindataset(..., instances_per_episode=1, context_length=32)"""
     data,pos2id,id2pos = loaddata(prefix)
     lang,task2int,int2task = loadlang(prefix)
     x = []
@@ -88,8 +115,9 @@ def calvindataset2(prefix='../data/debug-training', features=range(1,74), window
     return TensorDataset(x,y,idx)
 
 
-# Predict annotation from 2 successive frames (picked anywhere from the last 32 frames associated with task)
-def calvindataset3(prefix='../data/debug-training', features=range(1,74), window=32, frames=2):
+# Predict annotation from 4 successive frames (picked anywhere from the last 32 frames associated with task)
+def calvindataset3(prefix='../data/debug-training', features=range(1,74), window=32, frames=4):
+    """Deprecated, please use calvindataset(..., instances_per_episode=32, context_length=4)"""
     data,pos2id,id2pos = loaddata(prefix)
     lang,task2int,int2task = loadlang(prefix)
     p = []
@@ -240,3 +268,4 @@ int2task = [
     'turn_on_lightbulb',
     'unstack_block'
 ]
+

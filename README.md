@@ -51,7 +51,8 @@
 | ABCD/validation | . |
 
 The validation directories for ABCD, ABC, and D have the same content: calvin_scene_D:
-0:53818, 219635:244284, 399946:420498. (99022 frames).
+0:53818, 219635:244284, 399946:420498. (99022 frames). However note that the language
+annotations in the D split is different from the ones in the ABC/ABCD splits.
 
 The training directory for D has the rest of the scene D data: calvin_scene_D: 53819:219634,
 244285:399945, 420499:611098. (512077 frames).  (scene_info.npy says scene_A but should be
