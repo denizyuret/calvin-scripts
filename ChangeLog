@@ -7,7 +7,7 @@
 	- try tensorboard
 	- try rnn
 
-	* +: See how episode-based model does on an individual frame basis.
+	* +: See how episode-based (ABCD) model does on an individual frame basis.
 	>>> for i in [1,2,4,8,16,32]:
 	...   d = ld.calvindataset("../data/ABC-validation", instances_per_episode=i, context_length=32)
 	...   print('instances per episode = ', i)
@@ -21,12 +21,14 @@
 	last-32-frames: [{'val_loss': 0.4216434359550476,   'val_acc': 0.871147632598877}]   (32x1-frame-model)
 	last-32-frames: [{'val_loss': 0.24731987714767456,  'val_acc': 0.9218031167984009}]  (32x4-frame-model)
 
-	* +: See how frame-based model does on the last frame of each episode.
+	* +: See how frame-based (ABCD) model does on the last frame of each episode.
 	>>> d = ld.calvindataset("../data/ABC-validation", instances_per_episode=1, context_length=(4|1))
 	32x1-frame-model: [{'val_loss': 0.6967383623123169, 'val_acc': 0.7939282655715942}]  (on last frame)
 	32x1-frame-model: [{'val_loss': 0.4216434359550476, 'val_acc': 0.871147632598877}]   (on all frames)
 	32x4-frame-model: [{'val_loss': 0.6505945324897766, 'val_acc': 0.8012879490852356}]  (on last frame)
 	32x4-frame-model: [{'val_loss': 0.2473198771476745, 'val_acc': 0.9218031167984009}]  (on all frames)
+	32x32-frame-model:
+	32x32-frame-model:
 
 	* +: See what per-annotation accuracy is using majority voting of 32x1-frame or 32x4-frame models.
 
@@ -136,6 +138,40 @@
 	m3 = mlp.LitMLP.load_from_checkpoint('mlp_project/7z3vxixb/checkpoints/epoch=26-step=138348.ckpt')
 	tr.validate(m3, DataLoader(abcval, batch_size=32)) #=> [{'val_loss': 0.3023688793182373,  'val_acc': 0.8982003331184387}]
 	tr.validate(m3, DataLoader(dval, batch_size=32))   #=> [{'val_loss': 0.38487085700035095, 'val_acc': 0.8820474743843079}]
+
+
+	* === MLP-Experiments-32x32-frame: context_length=32, instances_per_episode=32
+	tr = pl.Trainer(accelerator='gpu', devices=1, max_epochs=1)
+
+	* ABCD:
+	abcdtrn = ld.calvindataset("../data/ABCD-training", instances_per_episode=32, context_length=32)
+	abcdval = ld.calvindataset("../data/ABCD-validation", instances_per_episode=32, context_length=32)
+	dval = ld.calvindataset3("../data/D-validation")
+	mlp.train(abcdtrn, abcdval, max_steps=1500000, batch_size=32, lr=0.0001, dropout=0.5, weight_decay=0.1, hidden=[512,512])
+	m1 = mlp.LitMLP.load_from_checkpoint()
+	tr.validate(m1, DataLoader(abcdval, batch_size=32)) #=> 
+	tr.validate(m1, DataLoader(dval, batch_size=32))    #=> 
+
+	* ABC:
+	abctrn = ld.calvindataset("../data/ABC-training", instances_per_episode=32, context_length=32)
+	abcval = ld.calvindataset("../data/ABC-validation", instances_per_episode=32, context_length=32)
+	mlp.train(abctrn, abcval, max_steps=1500000, batch_size=32, lr=0.0001, dropout=0.5, weight_decay=0.1, hidden=[512,512])
+	m2 = mlp.LitMLP.load_from_checkpoint()
+	tr.validate(m2, DataLoader(abcval, batch_size=32)) #=> 
+	tr.validate(m2, DataLoader(dval, batch_size=32))   #=> 
+
+	* D:
+	dtrn = ld.calvindataset("../data/D-training", instances_per_episode=32, context_length=32)
+	dval = ld.calvindataset("../data/D-validation", instances_per_episode=32, context_length=32)
+	mlp.train(dtrn, dval, max_steps=1500000, batch_size=32, lr=0.0001, dropout=0.5, weight_decay=0.1, hidden=[512,512])
+	m3 = mlp.LitMLP.load_from_checkpoint('mlp_project/bv1t44ac/checkpoints/epoch=41-step=215208.ckpt')
+	dval1 = ld.calvindataset("../data/D-validation", instances_per_episode=1, context_length=32)
+	abcval = ld.calvindataset("../data/ABC-validation", instances_per_episode=32, context_length=32)
+	abcval1 = ld.calvindataset("../data/ABC-validation", instances_per_episode=1, context_length=32)
+	tr.validate(m3, DataLoader(abcval, batch_size=32))  #=> [{'val_loss': 0.3558889627456665, 'val_acc': 0.8967629075050354}]
+	tr.validate(m3, DataLoader(abcval1, batch_size=32)) #=> [{'val_loss': 0.3719893097877502, 'val_acc': 0.8905243873596191}]
+	tr.validate(m3, DataLoader(dval, batch_size=32))    #=> [{'val_loss': 0.3902618885040283, 'val_acc': 0.8826656937599182}]
+	tr.validate(m3, DataLoader(dval1, batch_size=32))   #=> [{'val_loss': 0.4161476790904999, 'val_acc': 0.8892185688018799}]
 
 
 	* bugs:
