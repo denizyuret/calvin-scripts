@@ -1,3 +1,54 @@
+2023-03-05  dyuret  <dyuret@login03.kuacc.ku.edu.tr>
+
+	* MLP-Experiments: using last 32 frames and all 73 features concatenated.
+
+	* ABCD: wandb/run-20230305_224324-fqm3f8nl: (y1zidphb:dark-sky-84)
+	- Can get 98% val acc with (using last 32 frames and all 73 features):
+	- Note the large difference between abcval and dval (same data different annotations).
+	abcdtrn = ld.calvindataset2("../data/ABCD-training")
+	abcdval = ld.calvindataset2("../data/ABCD-validation")
+	mlp.train(abcdtrn, abcdval, max_steps=150000, batch_size=32, lr=0.0001, dropout=0.5, weight_decay=0.1, hidden=[512,512])
+	tr = pl.Trainer(accelerator='gpu', devices=1, max_epochs=1)
+	m1 = mlp.LitMLP.load_from_checkpoint('mlp_project/y1zidphb/checkpoints/epoch=180-step=129958.ckpt')
+	tr.validate(m1, DataLoader(abcval, batch_size=32)) #=> [{'val_loss': 0.046598080545663834, 'val_acc': 0.9889604449272156}]
+	tr.validate(m1, DataLoader(dval, batch_size=32))   #=> [{'val_loss': 0.4002395272254944, 'val_acc': 0.919881284236908}]
+
+	* ABC: wandb/run-20230306_001846-3xaj8o6q: (e95afymd:drawn-wood-83)
+	- Only able to get to %70 even with strong regularization:
+	abctrn = ld.calvindataset2("../data/ABC-training")
+	abcval = ld.calvindataset2("../data/ABC-validation")
+	mlp.train(abctrn, abcval, max_steps=150000, batch_size=32, lr=0.0001, dropout=0.7, weight_decay=0.2, hidden=[512,512])
+	m2 = mlp.LitMLP.load_from_checkpoint('mlp_project/e95afymd/checkpoints/epoch=77-step=43602.ckpt')
+	tr.validate(m2, DataLoader(abcval, batch_size=32)) #=> [{'val_loss': 0.6437634825706482, 'val_acc': 0.712051510810852}]
+	tr.validate(m2, DataLoader(dval, batch_size=32))   #=> [{'val_loss': 1.0606377124786377, 'val_acc': 0.6468842625617981}]
+
+	* D: wandb/run-20230306_001635-p06ygu9d: (0xftsmbg:eternal-grass-82)
+	- Pretty much all experiments converge to 93% for a range of regularizations.
+	ABCD does significantly better on the same validation set.
+	But D language annotations are different! And this time the order is reversed? Cooked val set for D-training?
+	dtrn = ld.calvindataset2("../data/ABC-training")
+	dval = ld.calvindataset2("../data/ABC-validation")
+	mlp.train(dtrn, dval, max_steps=150000, batch_size=32, lr=0.0001, dropout=0.5, weight_decay=0.1, hidden=[512,512])
+	m3 = mlp.LitMLP.load_from_checkpoint('mlp_project/0xftsmbg/checkpoints/epoch=927-step=149408.ckpt')
+	tr.validate(m3, DataLoader(abcval, batch_size=32)) #=> [{'val_loss': 0.3091912567615509, 'val_acc': 0.9153633713722229}]
+	tr.validate(m3, DataLoader(dval, batch_size=32))   #=> [{'val_loss': 0.25575390458106995, 'val_acc': 0.9426310658454895}]
+
+	* bugs:
+	+ the validation results do not match when reload from checkpoint!
+	We need to call m.eval() before accuracy. Call m.train() again to activate dropout etc.
+	+ the validation sets of D and ABC are different (same data different language. ABC=ABCD)
+	Reporting both
+	+ wandb: cannot see max validation accuracy!
+	pytorch lightning: checkpoint model at best val: https://pytorch-lightning.readthedocs.io/en/stable/common/checkpointing_intermediate.html
+	use checkpoint_callback = ModelCheckpoint(monitor = "val_acc", mode = 'max')
+	pl.trainer(..., callbacks=[checkpoint_callback], ...)
+
+	* hyperparameters:
+	>>> a = torch.load('mlp_project/v3vfpaws/checkpoints/epoch=178-step=100000.ckpt')
+	>>> a["hyper_parameters"]
+	{'sizes': (2336, 512, 512, 34), 'lr': 0.0001, 'weight_decay': 0.1, 'dropout': 0.6}
+
+
 2023-03-04  dyuret  <dyuret@login03.kuacc.ku.edu.tr>
 
 	* mlp:
@@ -8,6 +59,11 @@
 	- Print out confusion matrix.
 	- Emphasize the differences using a smart scaled difference functions (careful about episode boundaries and 2pi angle differences).
 	- try tensorboard
+	- try rnn
+
+	* system:
+	+ error in process filter: No such directory found via CDPATH environment variable (emacs terminal with srun)
+	  fixed disabling term-command-hook.
 
 	* pl:
 	+ forward vs predict_step: do we need both? forward is needed for predict.
