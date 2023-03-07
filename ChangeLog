@@ -1,3 +1,30 @@
+2023-03-07  dyuret  <dyuret@login03.kuacc.ku.edu.tr>
+
+	* MLP-Summary:
+	trn		abcval	abcval1	dval	dval1
+	---		------	-------	----	-----
+	ABCD-32x32	.9577	.9604	.8935	.9070
+	ABCD-1x32	.5306	.9890	.4319	.9199
+	ABCD-32x4	.9113	.8418	.8810	.8299
+	ABCD-32x1	.8711	.7939	.8378	.7893
+	ABC-32x32	.6136	.5832	.5854	.5658
+	ABC-1x32	.3329	.7121	.2848	.6469
+	ABC-32x4	.6403	.5915	.6159	.5697
+	ABC-32x1	.6380	.6109	.6060	.5687
+	D-32x32		.8968	.8905	.8827	.8892
+	D-1x32   	.5507	.9154	.4623	.9426
+	D-32x4   	.8969	.8151	.8817	.8051
+	D-32x1   	.8764	.7884	.8667	.7784
+
+	Notes:
+	- ABC-32x4 means 32 instances per episode from its last 32 frames, each instance has a 4 frame context.
+	- abcval evaluates accuracy on the last 32 frames of each episode, abcval1 evaluates only on the last frame.
+	- ABCD and ABC used earlystop based on abcval, D used earlystop based on dval.
+	- D contains training instances only from D, ABC from A,B,C and ABCD is a union of the two training sets.
+	- The validation sets contain instances only from D (disjoint from training).
+	- abcval and abcdval has the same language annotations, dval has different language annotations.
+
+
 2023-03-06  dyuret  <dyuret@login03.kuacc.ku.edu.tr>
 
 	* TODO:
@@ -35,47 +62,34 @@
 
 2023-03-05  dyuret  <dyuret@login03.kuacc.ku.edu.tr>
 
-	* Summary:
-	trn	abcval	dval	exp
-	---	------	----	---
-	ABCD	.9890	.9199	32-frame
-	ABCD	.9218	.8860	4-frame
-	ABCD	.8711	.8378	1-frame
-	D	.9154	.9426	32-frame
-	D	.8982	.8820	4-frame
-	D	.8763	.8667	1-frame
-	ABC	.7121	.6469	32-frame
-	ABC	.6489	.6253	4-frame
-	ABC	.6380	.6060	1-frame
-
 	* === MLP-Experiments-1x32frame: context_length=32, instances_per_episode=1
 
-	* ABCD: wandb/run-20230305_224324-fqm3f8nl: (y1zidphb:dark-sky-84)
+	* ABCD-1x32: wandb/run-20230305_224324-fqm3f8nl: (y1zidphb:dark-sky-84)
 	- Can get 98% val acc with (using last 32 frames and all 73 features):
 	- Note the large difference between abcval and dval (same data different annotations).
-	abcdtrn = ld.calvindataset2("../data/ABCD-training")
-	abcdval = ld.calvindataset2("../data/ABCD-validation")
+	abcdtrn = ld.calvindataset("../data/ABCD-training", instances_per_episode=1, context_length=32)
+	abcdval = ld.calvindataset("../data/ABCD-validation", instances_per_episode=1, context_length=32))
 	mlp.train(abcdtrn, abcdval, max_steps=150000, batch_size=32, lr=0.0001, dropout=0.5, weight_decay=0.1, hidden=[512,512])
 	tr = pl.Trainer(accelerator='gpu', devices=1, max_epochs=1)
 	m1 = mlp.LitMLP.load_from_checkpoint('mlp_project/y1zidphb/checkpoints/epoch=180-step=129958.ckpt')
 	tr.validate(m1, DataLoader(abcval, batch_size=32)) #=> [{'val_loss': 0.046598080545663834, 'val_acc': 0.9889604449272156}]
 	tr.validate(m1, DataLoader(dval, batch_size=32))   #=> [{'val_loss': 0.4002395272254944, 'val_acc': 0.919881284236908}]
 
-	* ABC: wandb/run-20230306_001846-3xaj8o6q: (e95afymd:drawn-wood-83)
+	* ABC-1x32: wandb/run-20230306_001846-3xaj8o6q: (e95afymd:drawn-wood-83)
 	- Only able to get to %70 even with strong regularization:
-	abctrn = ld.calvindataset2("../data/ABC-training")
-	abcval = ld.calvindataset2("../data/ABC-validation")
+	abctrn = ld.calvindataset("../data/ABC-training", instances_per_episode=1, context_length=32)
+	abcval = ld.calvindataset("../data/ABC-validation", instances_per_episode=1, context_length=32)
 	mlp.train(abctrn, abcval, max_steps=150000, batch_size=32, lr=0.0001, dropout=0.7, weight_decay=0.2, hidden=[512,512])
 	m2 = mlp.LitMLP.load_from_checkpoint('mlp_project/e95afymd/checkpoints/epoch=77-step=43602.ckpt')
 	tr.validate(m2, DataLoader(abcval, batch_size=32)) #=> [{'val_loss': 0.6437634825706482, 'val_acc': 0.712051510810852}]
 	tr.validate(m2, DataLoader(dval, batch_size=32))   #=> [{'val_loss': 1.0606377124786377, 'val_acc': 0.6468842625617981}]
 
-	* D: wandb/run-20230306_001635-p06ygu9d: (0xftsmbg:eternal-grass-82)
+	* D-1x32: wandb/run-20230306_001635-p06ygu9d: (0xftsmbg:eternal-grass-82)
 	- Pretty much all experiments converge to 93% for a range of regularizations.
 	ABCD does significantly better on the same validation set.
 	But D language annotations are different! And this time the order is reversed? Cooked val set for D-training?
-	dtrn = ld.calvindataset2("../data/ABC-training")
-	dval = ld.calvindataset2("../data/ABC-validation")
+	dtrn = ld.calvindataset("../data/ABC-training", instances_per_episode=1, context_length=32)
+	dval = ld.calvindataset("../data/ABC-validation", instances_per_episode=1, context_length=32)
 	mlp.train(dtrn, dval, max_steps=150000, batch_size=32, lr=0.0001, dropout=0.5, weight_decay=0.1, hidden=[512,512])
 	m3 = mlp.LitMLP.load_from_checkpoint('mlp_project/0xftsmbg/checkpoints/epoch=927-step=149408.ckpt')
 	tr.validate(m3, DataLoader(abcval, batch_size=32)) #=> [{'val_loss': 0.3091912567615509, 'val_acc': 0.9153633713722229}]
@@ -85,26 +99,26 @@
 	* === MLP-Experiments-32x1-frame: context_length=1, instances_per_episode=32
 	tr = pl.Trainer(accelerator='gpu', devices=1, max_epochs=1)
 
-	* ABCD:
-	abcdtrn = ld.calvindataset1("../data/ABCD-training")
-	abcdval = ld.calvindataset1("../data/ABCD-validation")
+	* ABCD-32x1:
+	abcdtrn = ld.calvindataset("../data/ABCD-training", instances_per_episode=32, context_length=1)
+	abcdval = ld.calvindataset("../data/ABCD-validation", instances_per_episode=32, context_length=1)
 	dval = ld.calvindataset1("../data/D-validation")
 	mlp.train(abcdtrn, abcdval, max_steps=150000, batch_size=32, lr=0.0001, dropout=0.5, weight_decay=0.1, hidden=[512,512])
 	m1 = mlp.LitMLP.load_from_checkpoint('mlp_project/iyyed7m1/checkpoints/epoch=5-step=137796.ckpt')
 	tr.validate(m1, DataLoader(abcdval, batch_size=32)) #=> [{'val_loss': 0.4216434359550476, 'val_acc': 0.871147632598877}]
 	tr.validate(m1, DataLoader(dval, batch_size=32))    #=> [{'val_loss': 0.6235239505767822, 'val_acc': 0.8378152847290039}]
 
-	* ABC:
-	abctrn = ld.calvindataset1("../data/ABC-training")
-	abcval = ld.calvindataset1("../data/ABC-validation")
+	* ABC-32x1:
+	abctrn = ld.calvindataset("../data/ABC-training", instances_per_episode=32, context_length=1)
+	abcval = ld.calvindataset("../data/ABC-validation", instances_per_episode=32, context_length=1)
 	mlp.train(abctrn, abcval, max_steps=150000, batch_size=32, lr=0.0001, dropout=0.5, weight_decay=0.1, hidden=[512,512])
 	m2 = mlp.LitMLP.load_from_checkpoint('mlp_project/ondcx26m/checkpoints/epoch=5-step=107220.ckpt')
 	tr.validate(m2, DataLoader(abcval, batch_size=32)) #=> [{'val_loss': 0.9127740859985352, 'val_acc': 0.6380232572555542}]
 	tr.validate(m2, DataLoader(dval, batch_size=32))   #=> [{'val_loss': 1.1524760723114014, 'val_acc': 0.6060212850570679}]
 
-	* D:
-	dtrn = ld.calvindataset1("../data/D-training")
-	dval = ld.calvindataset1("../data/D-validation")
+	* D-32x1:
+	dtrn = ld.calvindataset("../data/D-training", instances_per_episode=32, context_length=1)
+	dval = ld.calvindataset("../data/D-validation", instances_per_episode=32, context_length=1)
 	mlp.train(dtrn, dval, max_steps=150000, batch_size=32, lr=0.0001, dropout=0.5, weight_decay=0.1, hidden=[512,512])
 	m3 = mlp.LitMLP.load_from_checkpoint('mlp_project/ltfpotls/checkpoints/epoch=27-step=143472.ckpt')
 	tr.validate(m3, DataLoader(abcval, batch_size=32)) #=> [{'val_loss': 0.38017138838768005, 'val_acc': 0.8763511776924133}]
@@ -114,60 +128,61 @@
 	* === MLP-Experiments-32x4-frame: context_length=4, instances_per_episode=32
 	tr = pl.Trainer(accelerator='gpu', devices=1, max_epochs=1)
 
-	* ABCD:
-	abcdtrn = ld.calvindataset3("../data/ABCD-training")
-	abcdval = ld.calvindataset3("../data/ABCD-validation")
-	dval = ld.calvindataset3("../data/D-validation")
+	* ABCD-32x4:
+	abcdtrn = ld.calvindataset("../data/ABCD-training", instances_per_episode=32, context_length=4)
+	abcdval = ld.calvindataset("../data/ABCD-validation", instances_per_episode=32, context_length=4)
+	dval = ld.calvindataset("../data/D-validation", instances_per_episode=32, context_length=4)
 	mlp.train(abcdtrn, abcdval, max_steps=150000, batch_size=32, lr=0.0001, dropout=0.5, weight_decay=0.1, hidden=[512,512])
-	m1 = mlp.LitMLP.load_from_checkpoint('mlp_project/sie028z1/checkpoints/epoch=5-step=137796.ckpt')
-	tr.validate(m1, DataLoader(abcdval, batch_size=32)) #=> [{'val_loss': 0.24731987714767456, 'val_acc': 0.9218031167984009}]
-	tr.validate(m1, DataLoader(dval, batch_size=32))    #=> [{'val_loss': 0.48957118391990660, 'val_acc': 0.8860039710998535}]
+	m1 = mlp.LitMLP.load_from_checkpoint('mlp_project/dv9032kv/checkpoints/epoch=5-step=137796.ckpt')
+	tr.validate(m1, DataLoader(abcdval, batch_size=32)) #=> [{'val_loss': 0.2637326419353485, 'val_acc': 0.9113097786903381}]
+	tr.validate(m1, DataLoader(dval, batch_size=32))    #=> [{'val_loss': 0.4974829852581024, 'val_acc': 0.8810274600982666}]
 
-	* ABC:
-	abctrn = ld.calvindataset3("../data/ABC-training")
-	abcval = ld.calvindataset3("../data/ABC-validation")
+	* ABC-32x4:
+	abctrn = ld.calvindataset("../data/ABC-training", instances_per_episode=32, context_length=4)
+	abcval = ld.calvindataset("../data/ABC-validation", instances_per_episode=32, context_length=4)
 	mlp.train(abctrn, abcval, max_steps=150000, batch_size=32, lr=0.0001, dropout=0.5, weight_decay=0.1, hidden=[512,512])
-	m2 = mlp.LitMLP.load_from_checkpoint('mlp_project/1szhyy9m/checkpoints/epoch=2-step=53610.ckpt')
-	tr.validate(m2, DataLoader(abcval, batch_size=32)) #=> [{'val_loss': 0.8835569024085999, 'val_acc': 0.6489190459251404}]
-	tr.validate(m2, DataLoader(dval, batch_size=32))   #=> [{'val_loss': 1.1324200630187988, 'val_acc': 0.6252781748771667}]
+	m2 = mlp.LitMLP.load_from_checkpoint('mlp_project/0heo6gfj/checkpoints/epoch=2-step=53610.ckpt')
+	tr.validate(m2, DataLoader(abcval, batch_size=32)) #=> [{'val_loss': 0.9169828295707703, 'val_acc': 0.6402943730354309}]
+	tr.validate(m2, DataLoader(dval, batch_size=32))   #=> [{'val_loss': 1.178528904914856, 'val_acc': 0.6159433722496033}]
 
-	* D:
-	dtrn = ld.calvindataset3("../data/D-training")
-	dval = ld.calvindataset3("../data/D-validation")
+	* D-32x4:
+	dtrn = ld.calvindataset("../data/D-training", instances_per_episode=32, context_length=4)
+	dval = ld.calvindataset("../data/D-validation", instances_per_episode=32, context_length=4)
 	mlp.train(dtrn, dval, max_steps=150000, batch_size=32, lr=0.0001, dropout=0.5, weight_decay=0.1, hidden=[512,512])
-	m3 = mlp.LitMLP.load_from_checkpoint('mlp_project/7z3vxixb/checkpoints/epoch=26-step=138348.ckpt')
-	tr.validate(m3, DataLoader(abcval, batch_size=32)) #=> [{'val_loss': 0.3023688793182373,  'val_acc': 0.8982003331184387}]
-	tr.validate(m3, DataLoader(dval, batch_size=32))   #=> [{'val_loss': 0.38487085700035095, 'val_acc': 0.8820474743843079}]
+	m3 = mlp.LitMLP.load_from_checkpoint('mlp_project/w29sr8tr/checkpoints/epoch=23-step=122976.ckpt')
+	tr.validate(m3, DataLoader(abcval, batch_size=32)) #=> [{'val_loss': 0.31888464093208313, 'val_acc': 0.8968778848648071}]
+	tr.validate(m3, DataLoader(dval, batch_size=32))   #=> [{'val_loss': 0.38751137256622314, 'val_acc': 0.8817383646965027}]
 
 
 	* === MLP-Experiments-32x32-frame: context_length=32, instances_per_episode=32
 	tr = pl.Trainer(accelerator='gpu', devices=1, max_epochs=1)
-
-	* ABCD:
-	abcdtrn = ld.calvindataset("../data/ABCD-training", instances_per_episode=32, context_length=32)
-	abcdval = ld.calvindataset("../data/ABCD-validation", instances_per_episode=32, context_length=32)
-	dval = ld.calvindataset3("../data/D-validation")
-	mlp.train(abcdtrn, abcdval, max_steps=1500000, batch_size=32, lr=0.0001, dropout=0.5, weight_decay=0.1, hidden=[512,512])
-	m1 = mlp.LitMLP.load_from_checkpoint()
-	tr.validate(m1, DataLoader(abcdval, batch_size=32)) #=> 
-	tr.validate(m1, DataLoader(dval, batch_size=32))    #=> 
-
-	* ABC:
-	abctrn = ld.calvindataset("../data/ABC-training", instances_per_episode=32, context_length=32)
-	abcval = ld.calvindataset("../data/ABC-validation", instances_per_episode=32, context_length=32)
-	mlp.train(abctrn, abcval, max_steps=1500000, batch_size=32, lr=0.0001, dropout=0.5, weight_decay=0.1, hidden=[512,512])
-	m2 = mlp.LitMLP.load_from_checkpoint()
-	tr.validate(m2, DataLoader(abcval, batch_size=32)) #=> 
-	tr.validate(m2, DataLoader(dval, batch_size=32))   #=> 
-
-	* D:
-	dtrn = ld.calvindataset("../data/D-training", instances_per_episode=32, context_length=32)
 	dval = ld.calvindataset("../data/D-validation", instances_per_episode=32, context_length=32)
-	mlp.train(dtrn, dval, max_steps=1500000, batch_size=32, lr=0.0001, dropout=0.5, weight_decay=0.1, hidden=[512,512])
-	m3 = mlp.LitMLP.load_from_checkpoint('mlp_project/bv1t44ac/checkpoints/epoch=41-step=215208.ckpt')
 	dval1 = ld.calvindataset("../data/D-validation", instances_per_episode=1, context_length=32)
 	abcval = ld.calvindataset("../data/ABC-validation", instances_per_episode=32, context_length=32)
 	abcval1 = ld.calvindataset("../data/ABC-validation", instances_per_episode=1, context_length=32)
+
+	* ABCD-32x32:
+	abcdtrn = ld.calvindataset("../data/ABCD-training", instances_per_episode=32, context_length=32)
+	mlp.train(abcdtrn, abcval, max_steps=1500000, batch_size=32, lr=0.0001, dropout=0.5, weight_decay=0.1, hidden=[512,512])
+	m1 = mlp.LitMLP.load_from_checkpoint('mlp_project/i7t7yfv6/checkpoints/epoch=16-step=390422.ckpt')
+	tr.validate(m1, DataLoader(abcval, batch_size=32))  #=> [{'val_loss': 0.12283673137426376, 'val_acc': 0.9576817154884338}]
+	tr.validate(m1, DataLoader(abcval1, batch_size=32)) #=> [{'val_loss': 0.1442822366952896, 'val_acc': 0.9604415893554688}]
+	tr.validate(m1, DataLoader(dval, batch_size=32))    #=> [{'val_loss': 0.5026547908782959, 'val_acc': 0.8935151100158691}]
+	tr.validate(m1, DataLoader(dval1, batch_size=32))   #=> [{'val_loss': 0.3591073453426361, 'val_acc': 0.9070227742195129}]
+
+	* ABC-32x32: this is too low, more regularization needed
+	abctrn = ld.calvindataset("../data/ABC-training", instances_per_episode=32, context_length=32)
+	mlp.train(abctrn, abcval, max_steps=1500000, batch_size=32, lr=0.0001, dropout=0.75, weight_decay=0.25, hidden=[512,512])
+	m2 = mlp.LitMLP.load_from_checkpoint('mlp_project/0dhghbx7/checkpoints/epoch=5-step=107220.ckpt')
+	tr.validate(m2, DataLoader(abcval, batch_size=32))  #=> [{'val_loss': 0.9245778322219849, 'val_acc': 0.6136441826820374}]
+	tr.validate(m2, DataLoader(abcval1, batch_size=32)) #=> [{'val_loss': 0.9777761101722717, 'val_acc': 0.5832566618919373}]
+	tr.validate(m2, DataLoader(dval, batch_size=32))    #=> [{'val_loss': 1.2631582021713257, 'val_acc': 0.5854042768478394}]
+	tr.validate(m2, DataLoader(dval1, batch_size=32))   #=> [{'val_loss': 1.1301568746566772, 'val_acc': 0.5657764673233032}]
+
+	* D-32x32:
+	dtrn = ld.calvindataset("../data/D-training", instances_per_episode=32, context_length=32)
+	mlp.train(dtrn, dval, max_steps=1500000, batch_size=32, lr=0.0001, dropout=0.5, weight_decay=0.1, hidden=[512,512])
+	m3 = mlp.LitMLP.load_from_checkpoint('mlp_project/bv1t44ac/checkpoints/epoch=41-step=215208.ckpt')
 	tr.validate(m3, DataLoader(abcval, batch_size=32))  #=> [{'val_loss': 0.3558889627456665, 'val_acc': 0.8967629075050354}]
 	tr.validate(m3, DataLoader(abcval1, batch_size=32)) #=> [{'val_loss': 0.3719893097877502, 'val_acc': 0.8905243873596191}]
 	tr.validate(m3, DataLoader(dval, batch_size=32))    #=> [{'val_loss': 0.3902618885040283, 'val_acc': 0.8826656937599182}]

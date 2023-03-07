@@ -16,7 +16,7 @@ from pytorch_lightning.loggers import WandbLogger
 from pytorch_lightning.callbacks import ModelCheckpoint
 from torchmetrics import MeanMetric, MaxMetric, Accuracy
 from torchmetrics.functional import accuracy
-from torch.nn.functional import cross_entropy
+from torch.nn.functional import cross_entropy, softmax
 
 
 class LitMLP(pl.LightningModule):
@@ -50,9 +50,6 @@ class LitMLP(pl.LightningModule):
     def forward(self, x):
         return self.mlp(x)
 
-    def predict_step(self, batch, batch_idx):
-        return self(batch[0])
-
     def training_step(self, batch, batch_idx):
         x, y, *rest = batch
         yhat = self(x)
@@ -80,6 +77,10 @@ class LitMLP(pl.LightningModule):
         self.log("val_acc",  self.val_acc.compute())
         self.val_loss.reset(); self.val_acc.reset(); 
     
+    def predict_step(self, batch, batch_idx):
+        x, *rest = batch
+        return (softmax(self(x), dim=1), *rest)
+
 
 # Given trn and val datasets and optional hyperparameters, train and return an mlp
 def train(trn_set, val_set, hidden=[512], batch_size=128, max_epochs=-1, max_steps=-1, dropout=0.5, weight_decay=0, lr=0.001, name=None):
