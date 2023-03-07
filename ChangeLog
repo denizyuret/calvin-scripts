@@ -28,11 +28,13 @@
 2023-03-06  dyuret  <dyuret@login03.kuacc.ku.edu.tr>
 
 	* TODO:
-	- Train a 32x32 model.
+	+ Train a 32x32 model.
 	- Print out confusion matrix.
 	- Emphasize the differences using a smart scaled difference functions (careful about episode boundaries and 2pi angle differences).
-	- try tensorboard
+	- validate rel_actions formula
+	- try mlp on action classification with different inputs
 	- try rnn
+	- try tensorboard
 
 	* +: See how episode-based (ABCD) model does on an individual frame basis.
 	>>> for i in [1,2,4,8,16,32]:
@@ -233,10 +235,9 @@
 	aynı proje için several run yapıcaksanız name'i değiştirebilirsiniz
 
 	* TODO:
-	- load checkpoint
+	+ load checkpoint
 	+ measure val/trn loss
 	+ measure val/trn acc
-	- tensorboard
 	+ wandb: when do you get a new run?
 	+ visualize training curves
 	+ normalization
@@ -246,10 +247,8 @@
 2023-02-23  dyuret  <dyuret@login03.kuacc.ku.edu.tr>
 
 	* TODO:
-	- validate rel_actions formula
-	- extract tactile pixels
-	- see if controller coordinates are in the simulator: https://github.com/mees/calvin_env
-	- try mlp on action classification with different inputs
+	+ extract tactile pixels
+	+ see if controller coordinates are in the simulator: https://github.com/mees/calvin_env
 
 2023-02-22  dyuret  <dyuret@login02.kuacc.ku.edu.tr>
 

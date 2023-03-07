@@ -30,6 +30,7 @@ class LitMLP(pl.LightningModule):
         self.dropout = dropout
 
         self.mlp = nn.Sequential()
+        self.mlp.append(nn.Flatten())
         for i in range(1, len(sizes)-1):
             self.mlp.append(nn.Linear(sizes[i-1], sizes[i]))
             self.mlp.append(nn.ReLU())
@@ -56,7 +57,7 @@ class LitMLP(pl.LightningModule):
         loss = cross_entropy(yhat, y)
         self.trn_loss.update(loss, len(y))
         self.trn_acc.update(yhat, y)
-        self.wnorm.update(torch.linalg.vector_norm(self.mlp[3].weight))
+        self.wnorm.update(torch.linalg.vector_norm(self.mlp[4].weight))
         return loss
 
     def training_epoch_end(self, outputs):
@@ -83,12 +84,11 @@ class LitMLP(pl.LightningModule):
 
 
 # Given trn and val datasets and optional hyperparameters, train and return an mlp
-def train(trn_set, val_set, hidden=[512], batch_size=128, max_epochs=-1, max_steps=-1, dropout=0.5, weight_decay=0, lr=0.001, name=None):
+def train(trn_set, val_set, num_classes=34, hidden=[512], batch_size=128, max_epochs=-1, max_steps=-1, dropout=0.5, weight_decay=0, lr=0.001, name=None):
     global trainer, mlp, trn_loader, val_loader #DBG
-    xsize = trn_set.tensors[0].shape[1]
-    ysize = 1 + max(max(trn_set.tensors[1]).item(), max(val_set.tensors[1]).item())
-    mlp = LitMLP((xsize, *hidden, ysize), dropout=dropout, lr=lr, weight_decay=weight_decay)
-    trn_loader = DataLoader(trn_set, batch_size=batch_size, shuffle=True, num_workers=6)
+    xsize = trn_set[0][0].numel()
+    mlp = LitMLP((xsize, *hidden, num_classes), dropout=dropout, lr=lr, weight_decay=weight_decay)
+    trn_loader = DataLoader(trn_set, batch_size=batch_size, shuffle=True,  num_workers=6)
     val_loader = DataLoader(val_set, batch_size=batch_size, shuffle=False, num_workers=6)
     wandb_logger = WandbLogger(project='mlp_project', name=name)
     wandb_logger.experiment.config["batch_size"] = batch_size

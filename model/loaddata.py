@@ -2,7 +2,34 @@ import sys
 import numpy as np
 import torch
 import gzip
-from torch.utils.data import TensorDataset
+from torch.utils.data import TensorDataset, Dataset
+
+class CalvinDataset(Dataset):
+    def __init__(self, prefix='../data/debug-training', features=range(1,74), instances_per_episode=32, context_length=64):
+        data,pos2id,id2pos = loaddata(prefix)
+        lang,task2int,int2task = loadlang(prefix)
+        data_index = []; target = []; frame = []
+        for (start_frame, end_frame, task, annot) in lang:
+            taskid = task2int[task]
+            for instance_frame in range(end_frame - instances_per_episode + 1, end_frame+1):
+                instance_index = id2pos[instance_frame]
+                if instance_index - context_length + 1 >= 0:
+                    frame.append(instance_frame)
+                    target.append(taskid)
+                    data_index.append(instance_index)
+        self.__dict__.update(locals())
+
+    def __getitem__(self, index):
+        i = self.data_index[index] # converts dataset index to data index
+        # This gives a (T,X) tensor, call DataLoader with flatten=True to get T*X:
+        x = self.data[np.ix_(range(1+i-self.context_length, 1+i), self.features)]
+        inputs = torch.from_numpy(x)
+        target = torch.tensor(self.target[index])
+        frame = torch.tensor(self.frame[index])
+        return (inputs, target, frame)
+
+    def __len__(self):
+        return len(self.target)
 
 
 def loaddata(prefix):
