@@ -4,8 +4,18 @@ import torch
 import gzip
 from torch.utils.data import TensorDataset, Dataset
 
+
 class CalvinDataset(Dataset):
-    def __init__(self, prefix='../data/debug-training', features=range(1,74), instances_per_episode=32, context_length=64):
+    """
+    Turn the last `instances_per_episode` frames of each episode into instances with `features` from the last `context_length` frames.
+    Version 3: This has the same behavior as calvindataset() but is more memory efficient.
+    It keeps only the raw data in memory and constructs the context for each instance as needed.
+    """
+    def __init__(self, prefix='../data/debug-training', features=range(1,74), instances_per_episode=1, context_length=64):
+        # There are three indices for each frame:
+        # 1. Frame id given in the filename (and first column of data), which may be discontinuous and not start from 0.
+        # 2. Position in the `data` array. pos2id[2]=1 & id2pos[1]=2.
+        # 3. Position in the final dataset, which contains only the annotated subset of data. data_index[3]=2
         data,pos2id,id2pos = loaddata(prefix)
         lang,task2int,int2task = loadlang(prefix)
         data_index = []; target = []; frame = []
@@ -17,11 +27,10 @@ class CalvinDataset(Dataset):
                     frame.append(instance_frame)
                     target.append(taskid)
                     data_index.append(instance_index)
-        self.__dict__.update(locals())
+        self.__dict__.update(locals()) # convert each local variable to self.var
 
     def __getitem__(self, index):
-        i = self.data_index[index] # converts dataset index to data index
-        # This gives a (T,X) tensor, call DataLoader with flatten=True to get T*X:
+        i = self.data_index[index]
         x = self.data[np.ix_(range(1+i-self.context_length, 1+i), self.features)]
         inputs = torch.from_numpy(x)
         target = torch.tensor(self.target[index])
@@ -30,6 +39,105 @@ class CalvinDataset(Dataset):
 
     def __len__(self):
         return len(self.target)
+
+
+def calvindataset(prefix='../data/debug-training', features=range(1,74), instances_per_episode=32, context_length=1):
+    """
+    Turn the last `instances_per_episode` frames of each episode into instances with `features` from the last `context_length` frames.
+    Version 2: generalizes the three functions calvindataset1,2,3.
+    To get equivalent output to the previous version:
+    calvindataset1(..., window=32) = calvindataset(..., instances_per_episode=32, context_length=1)
+    calvindataset2(..., window=32) = calvindataset(..., instances_per_episode=1, context_length=32)
+    ... and except for reordering of features:
+    calvindataset3(..., window=32, frames=4) = calvindataset(..., instances_per_episode=32, context_length=4)
+    """
+    data,pos2id,id2pos = loaddata(prefix)
+    lang,task2int,int2task = loadlang(prefix)
+    x = []; y = []; idx = []
+    for (i,j,task,annot) in lang: # episode starts at i, ends at j, classified as task.
+        taskid = task2int[task]
+        for k in range(j-instances_per_episode+1, j+1): # we create instances for each of the last n frames of an episode
+            p = id2pos[k] - context_length + 1
+            if p >= 0:
+                idx.append(k)
+                y.append(taskid)
+                x.append(data[np.ix_(range(p, p+context_length), features)].reshape(-1))
+    x = torch.tensor(np.stack(x))
+    y = torch.tensor(y)
+    idx = torch.tensor(idx)
+    return TensorDataset(x,y,idx)
+
+
+def calvindataset1(prefix='../data/debug-training', features=range(1,74), window=32):
+    """
+    Predict task from a single frame (picked anywhere from the last 32 frames associated with task)
+    Version 1: deprecated, please use CalvinDataset(features, instances_per_episode=32, context_length=1)
+    """
+    data,pos2id,id2pos = loaddata(prefix)
+    lang,task2int,int2task = loadlang(prefix)
+    p = []
+    y = []
+    idx = []
+    for (i,j,task,annot) in lang: # i,j,k frame ids. p is an index into data.
+        taskid = task2int[task]
+        for k in range(j-window+1,j+1):
+            p.append(id2pos[k])
+            y.append(taskid)
+            idx.append(k)
+    x = torch.tensor(data[np.ix_(p,features)])
+    y = torch.tensor(y)
+    idx = torch.tensor(idx)
+    return TensorDataset(x,y,idx)
+
+
+
+def calvindataset2(prefix='../data/debug-training', features=range(1,74), window=32):
+    """
+    Predict annotation from the last 32 frames (out of 64 associated with the annotation).
+    Version 1: deprecated, please use CalvinDataset(features, instances_per_episode=1, context_length=32)
+    """
+    data,pos2id,id2pos = loaddata(prefix)
+    lang,task2int,int2task = loadlang(prefix)
+    x = []
+    y = []
+    idx = []
+    for (i,j,task,annot) in lang:
+        taskid = task2int[task]
+        p = id2pos[j]
+        x.append(np.ravel(data[np.ix_(range(p-window+1,p+1), features)]))
+        y.append(taskid)
+        idx.append(j)
+    x = torch.tensor(np.stack(x))
+    y = torch.tensor(y)
+    idx = torch.tensor(idx)
+    return TensorDataset(x,y,idx)
+
+
+
+def calvindataset3(prefix='../data/debug-training', features=range(1,74), window=32, frames=4):
+    """
+    Predict annotation from 4 successive frames (picked anywhere from the last 32 frames associated with task).
+    Version 1: deprecated, please use CalvinDataset(features, instances_per_episode=32, context_length=4)
+    """
+    data,pos2id,id2pos = loaddata(prefix)
+    lang,task2int,int2task = loadlang(prefix)
+    p = []
+    y = []
+    idx = []
+    for (i,j,task,annot) in lang:
+        taskid = task2int[task]
+        for k in range(j-window+1,j+1):
+            p.append(id2pos[k])
+            y.append(taskid)
+            idx.append(k)
+    p = np.array(p)
+    x = []
+    for f in range(0, frames):
+        x.append(torch.tensor(data[np.ix_(p-f, features)]))
+    x = torch.cat(x, dim=1)
+    y = torch.tensor(y)
+    idx = torch.tensor(idx)
+    return TensorDataset(x,y,idx)
 
 
 def loaddata(prefix):
@@ -75,95 +183,6 @@ dtype_lang = [
     ('task', object),
     ('annot', object)
 ]
-
-
-# This is a generalized version of all our dataset creators:
-# calvindataset1(..., window=32) = calvindataset(..., instances_per_episode=32, context_length=1)
-# calvindataset2(..., window=32) = calvindataset(..., instances_per_episode=1, context_length=32)
-# ... and except for reordering of features:
-# calvindataset3(..., window=32, frames=4) = calvindataset(..., instances_per_episode=32, context_length=4)
-
-def calvindataset(prefix='../data/debug-training', features=range(1,74), instances_per_episode=32, context_length=1):
-    """Turn the last instances_per_episode frames of each episode into instances with features from the last context_length frames."""
-    data,pos2id,id2pos = loaddata(prefix)
-    lang,task2int,int2task = loadlang(prefix)
-    x = []; y = []; idx = []
-    for (i,j,task,annot) in lang: # episode starts at i, ends at j, classified as task.
-        taskid = task2int[task]
-        for k in range(j-instances_per_episode+1, j+1): # we create instances for each of the last n frames of an episode
-            p = id2pos[k] - context_length + 1
-            if p >= 0:
-                idx.append(k)
-                y.append(taskid)
-                x.append(data[np.ix_(range(p, p+context_length), features)].reshape(-1))
-    x = torch.tensor(np.stack(x))
-    y = torch.tensor(y)
-    idx = torch.tensor(idx)
-    return TensorDataset(x,y,idx)
-
-
-# Predict task from a single frame (picked anywhere from the last 32 frames associated with task)
-def calvindataset1(prefix='../data/debug-training', features=range(1,74), window=32):
-    """Deprecated, please use calvindataset(..., instances_per_episode=32, context_length=1)"""
-    data,pos2id,id2pos = loaddata(prefix)
-    lang,task2int,int2task = loadlang(prefix)
-    p = []
-    y = []
-    idx = []
-    for (i,j,task,annot) in lang: # i,j,k frame ids. p is an index into data.
-        taskid = task2int[task]
-        for k in range(j-window+1,j+1):
-            p.append(id2pos[k])
-            y.append(taskid)
-            idx.append(k)
-    x = torch.tensor(data[np.ix_(p,features)])
-    y = torch.tensor(y)
-    idx = torch.tensor(idx)
-    return TensorDataset(x,y,idx)
-
-
-# Predict annotation from the last 32 frames (out of 64 associated with the annotation)
-def calvindataset2(prefix='../data/debug-training', features=range(1,74), window=32):
-    """Deprecated, please use calvindataset(..., instances_per_episode=1, context_length=32)"""
-    data,pos2id,id2pos = loaddata(prefix)
-    lang,task2int,int2task = loadlang(prefix)
-    x = []
-    y = []
-    idx = []
-    for (i,j,task,annot) in lang:
-        taskid = task2int[task]
-        p = id2pos[j]
-        x.append(np.ravel(data[np.ix_(range(p-window+1,p+1), features)]))
-        y.append(taskid)
-        idx.append(j)
-    x = torch.tensor(np.stack(x))
-    y = torch.tensor(y)
-    idx = torch.tensor(idx)
-    return TensorDataset(x,y,idx)
-
-
-# Predict annotation from 4 successive frames (picked anywhere from the last 32 frames associated with task)
-def calvindataset3(prefix='../data/debug-training', features=range(1,74), window=32, frames=4):
-    """Deprecated, please use calvindataset(..., instances_per_episode=32, context_length=4)"""
-    data,pos2id,id2pos = loaddata(prefix)
-    lang,task2int,int2task = loadlang(prefix)
-    p = []
-    y = []
-    idx = []
-    for (i,j,task,annot) in lang:
-        taskid = task2int[task]
-        for k in range(j-window+1,j+1):
-            p.append(id2pos[k])
-            y.append(taskid)
-            idx.append(k)
-    p = np.array(p)
-    x = []
-    for f in range(0, frames):
-        x.append(torch.tensor(data[np.ix_(p-f, features)]))
-    x = torch.cat(x, dim=1)
-    y = torch.tensor(y)
-    idx = torch.tensor(idx)
-    return TensorDataset(x,y,idx)
 
 
 dtype_data = [

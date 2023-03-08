@@ -1,3 +1,15 @@
+2023-03-08  dyuret  <dyuret@login03.kuacc.ku.edu.tr>
+
+	* TODO:
+	- try rnn
+	- Print out confusion matrix, esp for ABC.
+	- Inputs: Emphasize the differences using a smart scaled difference functions (careful about episode boundaries and 2pi angle differences).
+	- Inputs: try different subsets
+	- Inputs: try different representations (voxels & convolution?)
+	- validate rel_actions formula
+	- try tensorboard
+
+
 2023-03-07  dyuret  <dyuret@login03.kuacc.ku.edu.tr>
 
 	* MLP-Summary:
@@ -24,17 +36,10 @@
 	- The validation sets contain instances only from D (disjoint from training).
 	- abcval and abcdval has the same language annotations, dval has different language annotations.
 
-
-2023-03-06  dyuret  <dyuret@login03.kuacc.ku.edu.tr>
-
 	* TODO:
 	+ Train a 32x32 model.
-	- Print out confusion matrix.
-	- Emphasize the differences using a smart scaled difference functions (careful about episode boundaries and 2pi angle differences).
-	- validate rel_actions formula
-	- try mlp on action classification with different inputs
-	- try rnn
-	- try tensorboard
+
+2023-03-06  dyuret  <dyuret@login03.kuacc.ku.edu.tr>
 
 	* +: See how episode-based (ABCD) model does on an individual frame basis.
 	>>> for i in [1,2,4,8,16,32]:

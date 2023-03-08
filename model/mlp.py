@@ -1,21 +1,20 @@
 # Usage:
 # import mlp
 # import loaddata as ld
-# trn = ld.calvindataset1('../data/D-training')
-# val = ld.calvindataset1('../data/D-validation')
+# trn = ld.CalvinDataset('../data/D-training')
+# val = ld.CalvinDataset('../data/D-validation')
 # mlp.train(trn, val)
 
 import torch
 import torch.nn as nn
 import pytorch_lightning as pl
-import torchmetrics
 import wandb
 import loaddata as ld
+from torch.optim import AdamW
 from torch.utils.data import DataLoader
 from pytorch_lightning.loggers import WandbLogger
 from pytorch_lightning.callbacks import ModelCheckpoint
 from torchmetrics import MeanMetric, MaxMetric, Accuracy
-from torchmetrics.functional import accuracy
 from torch.nn.functional import cross_entropy, softmax
 
 
@@ -45,7 +44,7 @@ class LitMLP(pl.LightningModule):
 
 
     def configure_optimizers(self):
-        optimizer = torch.optim.AdamW(self.parameters(), lr=self.lr, weight_decay=self.weight_decay)
+        optimizer = AdamW(self.parameters(), lr=self.lr, weight_decay=self.weight_decay)
         return optimizer
 
     def forward(self, x):
