@@ -101,13 +101,16 @@ def numeric_fields(npz, idnum):
     ann = []
     prev = ""
     if annotations is not None:
+        curr_tasks = {}
         for n, ((low, high), t, s) in enumerate(annotations):
             if index > high:
                 prev = f"<{low}:{high}:{t}: {s}"
             elif index >= low and index <= high:
                 if not ann and prev:
                     ann.append(prev)
-                ann.append(f"={low}:{high}:{t}: {s}")
+                if t not in curr_tasks:
+                    ann.append(f"={low}:{high}:{t}: {s}")
+                    curr_tasks[t] = True
             elif index < low:
                 if not ann and prev:
                     ann.append(prev)
