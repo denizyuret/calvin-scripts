@@ -1,5 +1,12 @@
 2023-03-08  dyuret  <dyuret@login03.kuacc.ku.edu.tr>
 
+	* rnn: ideas
+	- hyperparameter optimize: hidden, dropout, weight_decay, lr
+	- play with output_interval
+	- play with sampling frequency (skip every other frame etc)
+	- represent scaled differences as features
+	- take a look at the last frame performance for validation
+
 	* TODO:
 	- try rnn
 	- Print out confusion matrix, esp for ABC.
