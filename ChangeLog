@@ -8,13 +8,13 @@
 	- take a look at the last frame performance for validation
 
 	* TODO:
-	- try rnn
+	+ try rnn
+	+ try tensorboard
 	- Print out confusion matrix, esp for ABC.
 	- Inputs: Emphasize the differences using a smart scaled difference functions (careful about episode boundaries and 2pi angle differences).
 	- Inputs: try different subsets
 	- Inputs: try different representations (voxels & convolution?)
 	- validate rel_actions formula
-	- try tensorboard
 
 
 2023-03-07  dyuret  <dyuret@login03.kuacc.ku.edu.tr>

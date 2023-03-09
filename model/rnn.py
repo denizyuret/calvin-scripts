@@ -92,6 +92,7 @@ class LitRNN(pl.LightningModule):
         self.wnorm.reset()
 
     def validation_epoch_end(self, outputs):
+        self.log("hp_metric", self.val_acc[1].compute())
         self.epoch_end("val", self.val_loss, self.val_acc)
     
 
