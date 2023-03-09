@@ -105,8 +105,8 @@ def train(trn_set, val_set, batch_size=128, max_epochs=-1, max_steps=-1, name=No
     global trainer, rnn, trn_loader, val_loader #DBG
     input_size = trn_set[0][0].shape[1]
     rnn = LitRNN(input_size, hidden_size, num_classes, num_layers, bias, batch_first, dropout, weight_decay, lr, output_interval)
-    trn_loader = DataLoader(trn_set, batch_size, shuffle=True,  num_workers=6)
-    val_loader = DataLoader(val_set, batch_size, shuffle=False, num_workers=6)
+    trn_loader = DataLoader(trn_set, batch_size, shuffle=True)
+    val_loader = DataLoader(val_set, batch_size, shuffle=False)
     checkpoint_callback = ModelCheckpoint(monitor = "val_acc_1", mode = 'max')
     torch.set_float32_matmul_precision('medium')
     trainer = pl.Trainer(accelerator='gpu', devices=1, max_epochs=max_epochs, max_steps=max_steps, callbacks=[checkpoint_callback])
