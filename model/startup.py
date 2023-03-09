@@ -1,6 +1,7 @@
 from importlib import reload
 import loaddata as ld
 import mlp
+import rnn
 import numpy as np
 import torch
 import torch.nn as nn

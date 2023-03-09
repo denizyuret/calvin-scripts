@@ -3,7 +3,7 @@
 import sys
 import os
 import re
-import pdb
+import gzip
 import tkinter as tk
 import numpy as np
 from argparse import ArgumentParser
@@ -165,13 +165,24 @@ def update_frame(idnum):
     tklabels[16].config(text = tklabels[16].text)
 
 
-def read_annotations(dir):
-    """Read annotations"""
-    annotfile = dir + "/lang_annotations/auto_lang_ann.npy"
+def read_annotations(args):
+    if args.lang is None:
+        annotfile = args.dir + "/lang_annotations/auto_lang_ann.npy"
+    else:
+        annotfile = args.lang
     if os.path.exists(annotfile):
         print(f"Reading {annotfile}", file=sys.stderr)
-        annotations = np.load(annotfile, allow_pickle=True).item()
-        annotations = sorted(list(zip(annotations["info"]["indx"], annotations["language"]["task"], annotations["language"]["ann"])))
+        if annotfile.endswith(".npy"):
+            annotations = np.load(annotfile, allow_pickle=True).item()
+            annotations = sorted(list(zip(annotations["info"]["indx"], annotations["language"]["task"], annotations["language"]["ann"])))
+        elif annotfile.endswith(".tsv.gz"):
+            annotations = []
+            with gzip.open(annotfile, 'rt') as f:
+                for line in f:
+                    x = line.strip().split('\t')
+                    annotations.append(((int(x[0]),int(x[1])),x[2],x[3]))
+        else:
+            error(f"Unknown extension: {annotfile}")
         print(f"Found {len(annotations)} annotations", file=sys.stderr)
     else:
         print(f"{annotfile} does not exist, annotations will not be displayed", file=sys.stderr)
@@ -243,12 +254,13 @@ if __name__ == "__main__":
     parser = ArgumentParser(description="Interactive visualization of CALVIN dataset")
     parser.add_argument("-d", "--dir", default=".", type=str, help="Path to dir containing episode_XXXXXXX.npz files")
     parser.add_argument("-t", "--text", type=str, help="Path to tsv file containing additional text, (1st column=frame id).")
+    parser.add_argument("-l", "--lang", type=str, help="(Optional) path to language file, default is to read it from --dir.")
     args = parser.parse_args()
 
     idnums, iddict = read_dir(args.dir)
     if len(idnums) == 0:
         sys.exit(f"Error: Could not find any episode files in {args.dir}.")
-    annotations = read_annotations(args.dir)
+    annotations = read_annotations(args)
     episodes = read_episodes(args.dir)
     scenes = read_scenes(args.dir)
     if args.text is not None:

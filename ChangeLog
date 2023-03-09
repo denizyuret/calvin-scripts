@@ -1,3 +1,35 @@
+2023-03-09  dyuret  <dyuret@login03.kuacc.ku.edu.tr>
+
+	* rnn-abcd-best:
+	{'batch_size': 128, 'hidden_size': 512, 'num_layers': 3, 'output_interval': 32, 'lr': 0.001, 'max_steps': 150000, 'dropout': 0.25, 'weight_decay': 0.1}
+	tr = pl.Trainer(accelerator='gpu', devices=1, max_epochs=1)
+	m1 = rnn.LitRNN.load_from_checkpoint('lightning_logs/version_4851386/checkpoints/epoch=433-step=78120.ckpt')
+	abcval = ld.CalvinDataset("../data/ABC-validation", instances_per_episode=32, context_length=64)
+	dval = ld.CalvinDataset("../data/D-validation", instances_per_episode=32, context_length=64)
+	# using ipe=32 is not ideal, instead check the val_acc_n for ipe=1.
+	abcval1 = ld.CalvinDataset("../data/ABC-validation", instances_per_episode=1, context_length=64)
+	dval1 = ld.CalvinDataset("../data/D-validation", instances_per_episode=1, context_length=64)
+	tr.validate(m1, DataLoader(abcval1, batch_size=128)) #=> [{'hp_metric': 0.9954001903533936, 'val_loss_all': 1.1064249277114868, 'val_acc_all': 0.7174131870269775, 'val_loss_1': 0.021554984152317047, 'val_acc_1': 0.9954001903533936, 'val_loss_n': 0.07080072909593582, 'val_acc_n': 0.976914644241333}]
+	tr.validate(m1, DataLoader(abcval, batch_size=128))  #=> [{'hp_metric': 0.9954001903533936, 'val_loss_all': 2.9308674335479736, 'val_acc_all': 0.45334240794181824, 'val_loss_1': 1.4030355215072632, 'val_acc_1': 0.7879197597503662, 'val_loss_n': 2.2739408016204834, 'val_acc_n': 0.6895744204521179}]
+	tr.validate(m1, DataLoader(dval1, batch_size=128))   #=> [{'hp_metric': 0.8921859264373779, 'val_loss_all': 1.781881332397461, 'val_acc_all': 0.6030075550079346, 'val_loss_1': 0.64299476146698, 'val_acc_1': 0.8921859264373779, 'val_loss_n': 0.8299209475517273, 'val_acc_n': 0.8604723215103149}]
+	tr.validate(m1, DataLoader(dval, batch_size=128))    #=> [{'hp_metric': 0.8921859264373779, 'val_loss_all': 3.8475852012634277, 'val_acc_all': 0.353348046541214, 'val_loss_1': 2.4296398162841797, 'val_acc_1': 0.6806379556655884, 'val_loss_n': 3.5552220344543457, 'val_acc_n': 0.557407557964325}]
+
+	trn		abcval	abcval1	dval	dval1
+	---		------	-------	----	-----
+	RNNABCD-32x64	.9769	.9954	.8605	.8922
+	MLPABCD-32x32	.9577	.9604	.8935	.9070
+
+	* rnn-abc-best:
+	{'batch_size': 128, 'hidden_size': 512, 'num_layers': 3, 'output_interval': 32, 'lr': 0.001, 'max_steps': 10000, 'dropout': 0.5, 'weight_decay': 1.5}
+	m2 = rnn.LitRNN.load_from_checkpoint('lightning_logs/version_4851451/checkpoints/epoch=50-step=7140.ckpt')
+	tr.validate(m2, DataLoader(abcval1, batch_size=128)) #=> [{'hp_metric': 0.7580496668815613, 'val_loss_all': 1.585593342781067, 'val_acc_all': 0.5129513740539551, 'val_loss_1': 0.49294838309288025, 'val_acc_1': 0.7580496668815613, 'val_loss_n': 0.6073561310768127, 'val_acc_n': 0.7320894598960876}]
+	tr.validate(m2, DataLoader(dval1, batch_size=128)) #=> [{'hp_metric': 0.7580496668815613, 'val_loss_all': 2.0052120685577393, 'val_acc_all': 0.4292933940887451, 'val_loss_1': 0.782939076423645, 'val_acc_1': 0.7082096934318542, 'val_loss_n': 0.9975055456161499, 'val_acc_n': 0.6633592844009399}]
+
+	trn		abcval	abcval1	dval	dval1
+	---		------	-------	----	-----
+	RNNABC-32x64	.7321	.7580	.6634	.7082
+	MLPABC-32x32	.6136	.5832	.5854	.5658
+
 2023-03-08  dyuret  <dyuret@login03.kuacc.ku.edu.tr>
 
 	* rnn: ideas
@@ -11,6 +43,7 @@
 	+ try rnn
 	+ try tensorboard
 	- Print out confusion matrix, esp for ABC.
+	- see if additional annotations improve ABC
 	- Inputs: Emphasize the differences using a smart scaled difference functions (careful about episode boundaries and 2pi angle differences).
 	- Inputs: try different subsets
 	- Inputs: try different representations (voxels & convolution?)
