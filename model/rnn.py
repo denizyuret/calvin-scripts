@@ -28,6 +28,7 @@ class LitRNN(pl.LightningModule):
         self.trn_acc = [ Accuracy(task = 'multiclass', num_classes = self.num_classes) for _ in range(3) ]
         self.val_acc = [ Accuracy(task = 'multiclass', num_classes = self.num_classes) for _ in range(3) ]
         self.wnorm = MaxMetric()
+        self.hp_metric = MaxMetric()
 
     def configure_optimizers(self):
         optimizer = torch.optim.AdamW(self.parameters(), lr=self.lr, weight_decay=self.weight_decay)
@@ -92,7 +93,8 @@ class LitRNN(pl.LightningModule):
         self.wnorm.reset()
 
     def validation_epoch_end(self, outputs):
-        self.log("hp_metric", self.val_acc[1].compute())
+        self.hp_metric.update(self.val_acc[1].compute())
+        self.log("hp_metric", self.hp_metric.compute())
         self.epoch_end("val", self.val_loss, self.val_acc)
     
 
