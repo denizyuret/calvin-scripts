@@ -103,7 +103,7 @@ class LitRNN(pl.LightningModule):
 # Given trn and val datasets and optional hyperparameters, train and return an rnn
 def train(trn_set, val_set, batch_size=128, max_epochs=-1, max_steps=-1, name=None,
           hidden_size=512, num_classes=34, num_layers=2, bias=True, batch_first=True,
-          dropout=0.5, weight_decay=0.1, lr=0.001, output_interval=32):
+          dropout=0.5, weight_decay=0.1, lr=0.001, output_interval=16):
     global trainer, rnn, trn_loader, val_loader #DBG
     input_size = trn_set[0][0].shape[1]
     rnn = LitRNN(input_size, hidden_size, num_classes, num_layers, bias, batch_first, dropout, weight_decay, lr, output_interval)

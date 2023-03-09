@@ -1,4 +1,4 @@
-# Usage: python annotate.py < preds.tsv > annotations.tsv
+# Usage: zcat preds.tsv.gz | python annotate.py -t 0.95 -l 20 | gzip > annotations.tsv.gz
 # Generate an annotation file from model probabilities
 # According to probability.py, a good rule of thumb is to annotate intervals where one task has >95% probability for at least 20 frames.
 
@@ -9,8 +9,8 @@ import loaddata as ld
 from argparse import ArgumentParser
 
 parser = ArgumentParser(description="Interactive visualization of CALVIN dataset")
-parser.add_argument("-t", "--threshold", default=0.90, type=float, help="Minimum probability to start an episode.")
-parser.add_argument("-l", "--length", default=10, type=int, help="Minimum length of interval above threshold.")
+parser.add_argument("-t", "--threshold", default=0.95, type=float, help="Minimum probability to start an episode.")
+parser.add_argument("-l", "--length", default=20, type=int, help="Minimum length of interval above threshold.")
 args = parser.parse_args()
 
 preds = np.loadtxt(sys.stdin, delimiter='\t', dtype='float32')

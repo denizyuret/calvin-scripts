@@ -1,5 +1,16 @@
 2023-03-09  dyuret  <dyuret@login03.kuacc.ku.edu.tr>
 
+	* 16-action-frames-to-train: The system predicts 'turn_on_led'
+	when the robot just hovers over the button but does not push
+	it. Reducing the training signal from the last 32 frames of each
+	annotation to 16 seems better from visualizing a couple of
+	examples. Otherwise a lot of "waiting in front of something"
+	frames get tagged as having accomplished the action. Restricting
+	to a single frame per episode is also possible but: (1) reduces
+	the amount of training data, (2) episode ends are not precise,
+	sometimes the action (e.g. turning on the light) happens a bit
+	earlier.
+
 	* rnn-abcd-best:
 	{'batch_size': 128, 'hidden_size': 512, 'num_layers': 3, 'output_interval': 32, 'lr': 0.001, 'max_steps': 150000, 'dropout': 0.25, 'weight_decay': 0.1}
 	tr = pl.Trainer(accelerator='gpu', devices=1, max_epochs=1)
