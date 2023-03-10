@@ -39,16 +39,16 @@
 * ep_lens.npy indicates the lengths of segments given by ep_start_end_ids.npy.
 * statistics.yaml gives basic stats for numeric variables.
 
-| directory | scene_info.npy |
-| --------- | -------------- |
-| debug/training | {'calvin_scene_D': [358482, 361252]} |
-| debug/validation | {'calvin_scene_D': [553567, 555241]} |
-| D/training | {'calvin_scene_D': [0, 611098]} |
-| D/validation | . |
-| ABC/training | {'calvin_scene_B': [0, 598909], 'calvin_scene_C': [598910, 1191338], 'calvin_scene_A': [1191339, 1795044]} |
-| ABC/validation | . |
-| ABCD/training | {'calvin_scene_D': [0, 611098], 'calvin_scene_B': [611099, 1210008], 'calvin_scene_C': [1210009, 1802437], 'calvin_scene_A': [1802438, 2406143]} |
-| ABCD/validation | . |
+| directory | frames | scene_info.npy |
+| --------- | ------ | -------------- |
+| debug/training | 2771 | {'calvin_scene_D': [358482, 361252]} |
+| debug/validation | 1675 | {'calvin_scene_D': [553567, 555241]} |
+| D/training | 512077 | {'calvin_scene_D': [0, 611098]} |
+| D/validation | 99022 | . |
+| ABC/training | 1795045 | {'calvin_scene_B': [0, 598909], 'calvin_scene_C': [598910, 1191338], 'calvin_scene_A': [1191339, 1795044]} |
+| ABC/validation | 99022 | . |
+| ABCD/training | 2307126 | {'calvin_scene_D': [0, 611098], 'calvin_scene_B': [611099, 1210008], 'calvin_scene_C': [1210009, 1802437], 'calvin_scene_A': [1802438, 2406143]} |
+| ABCD/validation | 99022 | . |
 
 The validation directories for ABCD, ABC, and D have the same content: calvin_scene_D:
 0:53818, 219635:244284, 399946:420498. (99022 frames). However note that the language
@@ -176,3 +176,22 @@ The fields in the output of the calvin_extract_tactile.py script (files like `D-
 06. rgb_tactile2_r
 07. rgb_tactile2_g
 08. rgb_tactile2_b
+
+
+## calvin-annotation-statistics
+
+Each language annotation file is class (task) balanced, roughly equal number of each class
+for each dataset.  ABC-validation and ABCD-validation are buggy and should not be used: they
+padded the annotation numbers by repeating the same annotations multiple times. Use
+D-validation instead.
+
+| dataset | % frames annotated | frames | annots | contig tasks | frames/annot | % frames multiply annotated |
+| --------| ------------------ | ------ | ------ | ------------ | ------------ | --------------------------- |
+| ABCD-training    | .3734 | 2307126 | 22966 | 14176 | 100.46 | .3650 |
+| ABC-training     | .3760 | 1795045 | 17870 | 11102 | 100.45 | .3608 |
+| D-training       | .3813 |  512077 |  5124 |  3251 |  99.94 | .3528 |
+| debug-training   | .1364 |    2771 |     9 |     7 | 307.89 | .3306 |
+| ABCD-validation  | .0634 |   99022 |  1087 |    90 |  91.10 | .9154 |
+| ABC-validation   | .0634 |   99022 |  1087 |    90 |  91.10 | .9154 |
+| D-validation     | .3660 |   99022 |  1011 |   605 |  97.94 | .3755 |
+| debug-validation | .2036 |    1675 |     8 |     6 | 209.38 | .1994 |
