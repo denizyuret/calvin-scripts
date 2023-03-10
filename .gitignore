@@ -3,6 +3,7 @@
 foo*
 *.err
 *.out
+*.top5
 *.tsv
 *.gz
 *.desc
