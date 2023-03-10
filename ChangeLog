@@ -1,3 +1,19 @@
+2023-03-10  dyuret  <dyuret@login03.kuacc.ku.edu.tr>
+
+	* TODO:
+	- make validation subsets out of A,B,C as well and see if ABC model can do well with those.
+	- look at ABC trn D val confusion matrix what it mostly gets wrong.
+	- do feature ablation experiments to see what features it relies on.
+
+	* leaderboard: Re-evaluate using D/validation and predicting only the last frame of every episode.
+
+	RNNABC	.7349	lightning_logs/version_4852401/checkpoints/epoch=349-step=195650.ckpt	{'batch_size': 32, 'hidden_size': 256, 'num_layers': 1, 'output_interval': 1, 'lr': 0.0001, 'max_steps': 400000, 'dropout': 0.75, 'weight_decay': 1.5}(instances_per_episode=1, context_length=64)
+	MLPABC	.7250	mlp_project/scsbwf6q/checkpoints/epoch=266-step=149253.ckpt -c 64 -f 'list(range(1,54))+list(range(66,74))'	{'batch_size': 32, 'hidden': [512, 512], 'lr': 0.0001, 'max_epochs': 300, 'dropout': 0.75, 'weight_decay': 0.25}; instances_per_episode=1, context_length=64, features=list(range(1,54))+list(range(66,74))
+	RNNABCD	.9169	lightning_logs/version_4852496/checkpoints/epoch=291-step=209656.ckpt 	{'batch_size': 32, 'hidden_size': 512, 'num_layers': 3, 'output_interval': 1, 'lr': 0.0001, 'max_steps': 300000, 'dropout': 0.25, 'weight_decay': 0.1}
+	MLPABCD	.9397	mlp_project/p1rzqxgm/checkpoints/epoch=317-step=228324.ckpt -c 32	{'batch_size': 32, 'hidden': [512, 512], 'lr': 0.0001, 'max_steps': 300000, 'dropout': 0.5, 'weight_decay': 0.1} (instances_per_episode=1, context_length=32)
+	RNND	.8358	lightning_logs/version_4852497/checkpoints/epoch=1545-step=248906.ckpt	{'batch_size': 32, 'hidden_size': 512, 'num_layers': 3, 'output_interval': 1, 'lr': 0.0001, 'max_steps': 300000, 'dropout': 0.25, 'weight_decay': 0.1}
+	MLPD	.9446	mlp_project/0xftsmbg/checkpoints/epoch=927-step=149408.ckpt -c 32	{'batch_size': 32, 'hidden': [512, 512], 'lr': 0.0001, 'max_steps': 300000, 'dropout': 0.5, 'weight_decay': 0.1}
+
 2023-03-09  dyuret  <dyuret@login03.kuacc.ku.edu.tr>
 
 	* 16-action-frames-to-train: The system predicts 'turn_on_led'
