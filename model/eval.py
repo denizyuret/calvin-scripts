@@ -21,6 +21,6 @@ except TypeError:
 except:
     error('Cannot load model')
 
-data = ld.CalvinDataset(args.data, eval(args.features), instances_per_episode, context_length)
+data = ld.CalvinDataset(args.data, eval(args.features), args.instances_per_episode, args.context_length)
 tr = pl.Trainer(accelerator='gpu', devices=1, max_epochs=1)
 tr.validate(model, DataLoader(data, batch_size=128))
