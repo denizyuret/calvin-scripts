@@ -1,9 +1,31 @@
+2023-03-11  dyuret  <dyuret@login03.kuacc.ku.edu.tr>
+
+	* TODO:
+	+ validate rel_actions formula
+	+ Inputs: Emphasize the differences using a smart scaled difference functions (careful about episode boundaries and 2pi angle differences).
+	+ run experiments with scene diff only, should be enough?
+	+ Print out confusion matrix, esp for ABC.
+	+ some classes need absolute position, try scene + scene_diff: did not improve on RNND.
+	- look at ABC trn D val confusion matrix what it mostly gets wrong.
+	- make validation subsets out of A,B,C as well and see if ABC model can do well with those.
+	- do feature ablation experiments to see what features it relies on.
+	- Inputs: try different subsets
+	- Inputs: try different representations (voxels & convolution?)
+
+	* leaderboard: using the new sdiff features with rnns improved some of them:
+
+	RNNABC	.8645	lightning_logs/version_4852828/checkpoints/epoch=177-step=99502.ckpt -f'range(74,98)'	{'batch_size': 32, 'hidden_size': 128, 'num_layers': 1, 'output_interval': 16, 'lr': 0.0001, 'max_steps': 100000, 'dropout': 0.75, 'weight_decay': 1.0}{'instances_per_episode': 1, 'context_length': 64, 'features': range(74, 98)}
+	MLPABC	.7250	mlp_project/scsbwf6q/checkpoints/epoch=266-step=149253.ckpt -c 64 -f 'list(range(1,54))+list(range(66,74))'	{'batch_size': 32, 'hidden': [512, 512], 'lr': 0.0001, 'max_epochs': 300, 'dropout': 0.75, 'weight_decay': 0.25}; instances_per_episode=1, context_length=64, features=list(range(1,54))+list(range(66,74))
+	RNNABCD	.9169	lightning_logs/version_4852496/checkpoints/epoch=291-step=209656.ckpt 	{'batch_size': 32, 'hidden_size': 512, 'num_layers': 3, 'output_interval': 1, 'lr': 0.0001, 'max_steps': 300000, 'dropout': 0.25, 'weight_decay': 0.1}
+	MLPABCD	.9397	mlp_project/p1rzqxgm/checkpoints/epoch=317-step=228324.ckpt -c 32	{'batch_size': 32, 'hidden': [512, 512], 'lr': 0.0001, 'max_steps': 300000, 'dropout': 0.5, 'weight_decay': 0.1} (instances_per_episode=1, context_length=32)
+	RNND	.9495	lightning_logs/version_4852815/checkpoints/epoch=306-step=49427.ckpt -f'range(74,98)'	{'batch_size': 32, 'hidden_size': 512, 'num_layers': 2, 'output_interval': 1, 'lr': 0.0001, 'max_steps': 50000, 'dropout': 0, 'weight_decay': 0.1}{'instances_per_episode': 1, 'context_length': 64, 'features': range(74, 98)}
+	MLPD	.9446	mlp_project/0xftsmbg/checkpoints/epoch=927-step=149408.ckpt -c 32	{'batch_size': 32, 'hidden': [512, 512], 'lr': 0.0001, 'max_steps': 300000, 'dropout': 0.5, 'weight_decay': 0.1}
+
+
 2023-03-10  dyuret  <dyuret@login03.kuacc.ku.edu.tr>
 
 	* TODO:
-	- make validation subsets out of A,B,C as well and see if ABC model can do well with those.
-	- look at ABC trn D val confusion matrix what it mostly gets wrong.
-	- do feature ablation experiments to see what features it relies on.
+	x see if additional annotations improve ABC: data is fully annotated!
 
 	* leaderboard: Re-evaluate using D/validation and predicting only the last frame of every episode.
 
@@ -11,7 +33,7 @@
 	MLPABC	.7250	mlp_project/scsbwf6q/checkpoints/epoch=266-step=149253.ckpt -c 64 -f 'list(range(1,54))+list(range(66,74))'	{'batch_size': 32, 'hidden': [512, 512], 'lr': 0.0001, 'max_epochs': 300, 'dropout': 0.75, 'weight_decay': 0.25}; instances_per_episode=1, context_length=64, features=list(range(1,54))+list(range(66,74))
 	RNNABCD	.9169	lightning_logs/version_4852496/checkpoints/epoch=291-step=209656.ckpt 	{'batch_size': 32, 'hidden_size': 512, 'num_layers': 3, 'output_interval': 1, 'lr': 0.0001, 'max_steps': 300000, 'dropout': 0.25, 'weight_decay': 0.1}
 	MLPABCD	.9397	mlp_project/p1rzqxgm/checkpoints/epoch=317-step=228324.ckpt -c 32	{'batch_size': 32, 'hidden': [512, 512], 'lr': 0.0001, 'max_steps': 300000, 'dropout': 0.5, 'weight_decay': 0.1} (instances_per_episode=1, context_length=32)
-	RNND	.8358	lightning_logs/version_4852497/checkpoints/epoch=1545-step=248906.ckpt	{'batch_size': 32, 'hidden_size': 512, 'num_layers': 3, 'output_interval': 1, 'lr': 0.0001, 'max_steps': 300000, 'dropout': 0.25, 'weight_decay': 0.1}
+	RNND	.9001	lightning_logs/version_4852748/checkpoints/epoch=516-step=83237.ckpt	{'batch_size': 32, 'hidden_size': 128, 'num_layers': 2, 'output_interval': 1, 'lr': 0.0001, 'max_steps': 100000, 'dropout': 0.5, 'weight_decay': 2.0}
 	MLPD	.9446	mlp_project/0xftsmbg/checkpoints/epoch=927-step=149408.ckpt -c 32	{'batch_size': 32, 'hidden': [512, 512], 'lr': 0.0001, 'max_steps': 300000, 'dropout': 0.5, 'weight_decay': 0.1}
 
 2023-03-09  dyuret  <dyuret@login03.kuacc.ku.edu.tr>
@@ -69,12 +91,6 @@
 	* TODO:
 	+ try rnn
 	+ try tensorboard
-	- Print out confusion matrix, esp for ABC.
-	- see if additional annotations improve ABC
-	- Inputs: Emphasize the differences using a smart scaled difference functions (careful about episode boundaries and 2pi angle differences).
-	- Inputs: try different subsets
-	- Inputs: try different representations (voxels & convolution?)
-	- validate rel_actions formula
 
 
 2023-03-07  dyuret  <dyuret@login03.kuacc.ku.edu.tr>

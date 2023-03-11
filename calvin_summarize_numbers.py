@@ -4,6 +4,6 @@
 import pandas as pd
 import sys
 
-df = pd.read_csv(sys.stdin, sep='\t', header=None)
+df = pd.read_csv(sys.stdin, sep='\s+', header=None)
 stats = df.describe().transpose()
 print(stats.to_string())

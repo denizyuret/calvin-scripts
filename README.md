@@ -30,6 +30,7 @@
 
 * `python calvin_extract_language.py auto_lang_ann.npy`: extract start, end, task, instruction triples in tab separated format
 
+* `python calvin_scene_diff.py D/validation`: extract and normalize scene coordinate differences, saved in sdiff files.
 
 ## calvin-files
 
@@ -88,21 +89,21 @@ A summary of all data (including images) in episode_XXXXXXX.npz files (each repr
 The fields in the output of calvin_extract_numbers.py (files like D-training.tsv.gz) is as follows:
 
 00. idnum
-01. actions/x (tcp (tool center point) position (3): x,y,z in absolute world coordinates)
+01. actions/x (tcp (tool center point) position: x,y,z in absolute world coordinates: we want in the next frame, i.e. act[t] = tcp[t+1])
 02. actions/y
 03. actions/z
 04. actions/a (tcp orientation (3): euler angles a,b,c in absolute world coordinates)
 05. actions/b
 06. actions/c
 07. actions/g (gripper_action (1): binary close=-1, open=1)
-08. rel_actions/x (tcp position (3): x,y,z in relative world coordinates normalized and clipped to (-1, 1) with scaling factor 50)
-09. rel_actions/y
+08. rel_actions/x (tcp position (3): x,y,z in relative world coordinates normalized and clipped to (-1, 1) with scaling factor 50: rel[t]=normalize(act[t]-tcp[t]))
+09. rel_actions/y (normalize_dist=clip(act-obs,-0.02,0.02)/0.02, normalized_angle=clip(((act-obs) + pi) % (2*pi) - pi, -0.05, 0.05)/0.05
 10. rel_actions/z
 11. rel_actions/a (tcp orientation (3): euler angles a,b,c in relative world coordinates normalized and clipped to (-1, 1) with scaling factor 20)
 12. rel_actions/b
 13. rel_actions/c
 14. rel_actions/g (gripper_action (1): binary close=-1, open=1)
-15. robot_obs/x (tcp position (3): x,y,z in world coordinates)
+15. robot_obs/x (tcp position (3): x,y,z in world coordinates: current position of tcp, i.e. tcp[t]=act[t-1])
 16. robot_obs/y
 17. robot_obs/z
 18. robot_obs/a (tcp orientation (3): euler angles a,b,c in world coordinates)
@@ -148,34 +149,65 @@ The fields in the output of calvin_controller_xyz.py (files like D-training-cont
 The coordinates give the location tcp should be at to move the controller at each point in time.
 For details of the coordinate calculation see calvin_controller_xyz.md and calvin_controller_xyz.py.
 
-00. idnum
-01. slider.x
-02. slider.y
-03. slider.z
-04. drawer.x
-05. drawer.y
-06. drawer.z
-07. button.x
-08. button.y
-09. button.z
-10. switch.x
-11. switch.y
-12. switch.z
-
+00.00 idnum
+01.54 slider.x
+02.55 slider.y
+03.56 slider.z
+04.57 drawer.x
+05.58 drawer.y
+06.59 drawer.z
+07.60 button.x
+08.61 button.y
+09.62 button.z
+10.63 switch.x
+11.64 switch.y
+12.65 switch.z
 
 ## calvin-tactile-coordinates
 
 The fields in the output of the calvin_extract_tactile.py script (files like `D-validation-tactile2.tsv.gz`). These give the average pixel of the tactile images. The depth pixels were normalized with x100, the rgb pixels were normalized with /255.0.
 
-00. idnum
-01. depth_tactile1
-02. depth_tactile2
-03. rgb_tactile1_r
-04. rgb_tactile1_g
-05. rgb_tactile1_b
-06. rgb_tactile2_r
-07. rgb_tactile2_g
-08. rgb_tactile2_b
+00.00 idnum
+01.66 depth_tactile1
+02.67 depth_tactile2
+03.68 rgb_tactile1_r
+04.69 rgb_tactile1_g
+05.70 rgb_tactile1_b
+06.71 rgb_tactile2_r
+07.72 rgb_tactile2_g
+08.73 rgb_tactile2_b
+
+## calvin-scene-changes
+
+These are the normalized differences in scene coordinates: normalize(x[next]-x[curr]).
+
+Normalization similar to rel_actions based on https://github.com/mees/calvin_env/blob/797142c588c21e76717268b7b430958dbd13bf48/calvin_env/utils/utils.py#L160
+
+00.00 idnum
+01.74 scene_obs/sliding_door
+02.75 scene_obs/drawer
+03.76 scene_obs/button
+04.77 scene_obs/switch
+05.78 scene_obs/lightbulb
+06.79 scene_obs/green_light
+07.80 scene_obs/redx
+08.81 scene_obs/redy
+09.82 scene_obs/redz
+10.83 scene_obs/reda
+11.84 scene_obs/redb
+12.85 scene_obs/redc
+13.86 scene_obs/bluex
+14.87 scene_obs/bluey
+15.88 scene_obs/bluez
+16.89 scene_obs/bluea
+17.90 scene_obs/blueb
+18.91 scene_obs/bluec
+19.92 scene_obs/pinkx
+20.93 scene_obs/pinky
+21.94 scene_obs/pinkz
+22.95 scene_obs/pinka
+23.96 scene_obs/pinkb
+24.97 scene_obs/pinkc
 
 
 ## calvin-annotation-statistics

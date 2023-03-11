@@ -11,7 +11,7 @@ class CalvinDataset(Dataset):
     Version 3: This has the same behavior as calvindataset() but is more memory efficient.
     It keeps only the raw data in memory and constructs the context for each instance as needed.
     """
-    def __init__(self, prefix='../data/debug-training', features=range(1,74), instances_per_episode=1, context_length=64):
+    def __init__(self, prefix='../data/debug-training', features=range(1,98), instances_per_episode=1, context_length=64):
         # There are three indices for each frame:
         # 1. Frame id given in the filename (and first column of data), which may be discontinuous and not start from 0.
         # 2. Position in the `data` array. pos2id[2]=1 & id2pos[1]=2.
@@ -41,7 +41,7 @@ class CalvinDataset(Dataset):
         return len(self.target)
 
 
-def calvindataset(prefix='../data/debug-training', features=range(1,74), instances_per_episode=32, context_length=1):
+def calvindataset(prefix='../data/debug-training', features=range(1,98), instances_per_episode=32, context_length=1):
     """
     Turn the last `instances_per_episode` frames of each episode into instances with `features` from the last `context_length` frames.
     Version 2: generalizes the three functions calvindataset1,2,3.
@@ -68,7 +68,7 @@ def calvindataset(prefix='../data/debug-training', features=range(1,74), instanc
     return TensorDataset(x,y,idx)
 
 
-def calvindataset1(prefix='../data/debug-training', features=range(1,74), window=32):
+def calvindataset1(prefix='../data/debug-training', features=range(1,98), window=32):
     """
     Predict task from a single frame (picked anywhere from the last 32 frames associated with task)
     Version 1: deprecated, please use CalvinDataset(features, instances_per_episode=32, context_length=1)
@@ -91,7 +91,7 @@ def calvindataset1(prefix='../data/debug-training', features=range(1,74), window
 
 
 
-def calvindataset2(prefix='../data/debug-training', features=range(1,74), window=32):
+def calvindataset2(prefix='../data/debug-training', features=range(1,98), window=32):
     """
     Predict annotation from the last 32 frames (out of 64 associated with the annotation).
     Version 1: deprecated, please use CalvinDataset(features, instances_per_episode=1, context_length=32)
@@ -114,7 +114,7 @@ def calvindataset2(prefix='../data/debug-training', features=range(1,74), window
 
 
 
-def calvindataset3(prefix='../data/debug-training', features=range(1,74), window=32, frames=4):
+def calvindataset3(prefix='../data/debug-training', features=range(1,98), window=32, frames=4):
     """
     Predict annotation from 4 successive frames (picked anywhere from the last 32 frames associated with task).
     Version 1: deprecated, please use CalvinDataset(features, instances_per_episode=32, context_length=4)
@@ -150,7 +150,10 @@ def loaddata(prefix):
     with gzip.open(prefix + '-tactile2.tsv.gz', 'rt') as f:
         tact = np.loadtxt(f, delimiter='\t', dtype='float32')
         assert np.array_equal(data[:,0], tact[:,0]), 'tact indices do not match'
-    data = np.concatenate((data, cont[:,1:], tact[:,1:]), axis=1)
+    with gzip.open(prefix + '-sdiff.tsv.gz', 'rt') as f:
+        sdiff = np.loadtxt(f, delimiter='\t', dtype='float32')
+        assert np.array_equal(data[:,0], sdiff[:,0]), 'sdiff indices do not match'
+    data = np.concatenate((data, cont[:,1:], tact[:,1:], sdiff[:,1:]), axis=1)
     data = normalize(data)
     pos2id = data[:,0].astype(int)
     id2pos = np.full(1+max(pos2id), -1)
@@ -270,6 +273,34 @@ dtype_tact = [
     ('tact2b', float)  # 08.73 rgb_tactile2_b
 ]
 
+dtype_sdiff = [
+    ('idnum', int),      # 00.00
+    ('slider_diff', float),   # 01.74
+    ('drawer_diff', float),   # 02.75
+    ('button_diff', float),   # 03.76
+    ('switch_diff', float),   # 04.77
+    ('lightbulb_diff', int),  # 05.78
+    ('greenlight_diff', int), # 06.79
+    ('redx_diff', float),     # 07.80
+    ('redy_diff', float),     # 08.81
+    ('redz_diff', float),     # 09.82
+    ('reda_diff', float),     # 10.83
+    ('redb_diff', float),     # 11.84
+    ('redc_diff', float),     # 12.85
+    ('bluex_diff', float),    # 13.86
+    ('bluey_diff', float),    # 14.87
+    ('bluez_diff', float),    # 15.88
+    ('bluea_diff', float),    # 16.89
+    ('blueb_diff', float),    # 17.90
+    ('bluec_diff', float),    # 18.91
+    ('pinkx_diff', float),    # 19.92
+    ('pinky_diff', float),    # 20.93
+    ('pinkz_diff', float),    # 21.94
+    ('pinka_diff', float),    # 22.95
+    ('pinkb_diff', float),    # 23.96
+    ('pinkc_diff', float)     # 24.97
+]    
+
 act_range = range(1,8)
 rel_range = range(8,15)
 tcp_range = range(15,22)
@@ -277,6 +308,7 @@ arm_range = range(22,30)
 scene_range = range(30,54)
 controller_range = range(54,66)
 tactile_range = range(66,74)
+sdiff_range = range(74,98)
 
 int2task = [
     'close_drawer',
