@@ -21,6 +21,11 @@
 	RNND	.9495	lightning_logs/version_4852815/checkpoints/epoch=306-step=49427.ckpt -f'range(74,98)'	{'batch_size': 32, 'hidden_size': 512, 'num_layers': 2, 'output_interval': 1, 'lr': 0.0001, 'max_steps': 50000, 'dropout': 0, 'weight_decay': 0.1}{'instances_per_episode': 1, 'context_length': 64, 'features': range(74, 98)}
 	MLPD	.9446	mlp_project/0xftsmbg/checkpoints/epoch=927-step=149408.ckpt -c 32	{'batch_size': 32, 'hidden': [512, 512], 'lr': 0.0001, 'max_steps': 300000, 'dropout': 0.5, 'weight_decay': 0.1}
 
+	* bugs:
+	ABC-training: 1511823	1511887	rotate_pink_block_left	take the pink block and turn it left (scene A)
+	The annotation is consistent with the visual. But there is no pink motion recorded in scene_obs.
+	The motion consistent with tcp seems to be in the red coordinates.
+
 
 2023-03-10  dyuret  <dyuret@login03.kuacc.ku.edu.tr>
 

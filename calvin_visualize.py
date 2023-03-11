@@ -87,17 +87,17 @@ def numeric_fields(npz, idnum):
     indexstr = f"frame: {idnum} ({scene}:{ep_start}:{ep_end})"
     
     a = npz["actions"]
-    actions = f"act:  x:{a[0]: 5.2f} y:{a[1]: 5.2f} z:{a[2]: 5.2f} a:{a[3]: 5.2f} b:{a[4]: 5.2f} c:{a[5]: 5.2f} grp:{a[6]: 5.2f}"
+    actions = f"act:  x:{a[0]: 6.3f} y:{a[1]: 6.3f} z:{a[2]: 6.3f} a:{a[3]: 6.3f} b:{a[4]: 6.3f} c:{a[5]: 6.3f} grp:{a[6]: 6.3f}"
     b = npz["rel_actions"]
-    rel_actions = f"rel:  x:{b[0]: 5.2f} y:{b[1]: 5.2f} z:{b[2]: 5.2f} a:{b[3]: 5.2f} b:{b[4]: 5.2f} c:{b[5]: 5.2f} grp:{b[6]: 5.2f}"
+    rel_actions = f"rel:  x:{b[0]: 6.3f} y:{b[1]: 6.3f} z:{b[2]: 6.3f} a:{b[3]: 6.3f} b:{b[4]: 6.3f} c:{b[5]: 6.3f} grp:{b[6]: 6.3f}"
     c = npz["robot_obs"]
-    robot_obs = f"tcp:  x:{c[0]: 5.2f} y:{c[1]: 5.2f} z:{c[2]: 5.2f} a:{c[3]: 5.2f} b:{c[4]: 5.2f} c:{c[5]: 5.2f} grp:{c[6]*100: 5.2f}"
-    robot_arm = f"arm:  a:{c[7]: 5.2f} b:{c[8]: 5.2f} c:{c[9]: 5.2f} d:{c[10]: 5.2f} e:{c[11]: 5.2f} f:{c[12]: 5.2f} g:{c[13]: 5.2f} grp:{c[14]: 5.2f}"
+    robot_obs = f"tcp:  x:{c[0]: 6.3f} y:{c[1]: 6.3f} z:{c[2]: 6.3f} a:{c[3]: 6.3f} b:{c[4]: 6.3f} c:{c[5]: 6.3f} grp:{c[6]*100: 6.3f}"
+    robot_arm = f"arm:  a:{c[7]: 6.3f} b:{c[8]: 6.3f} c:{c[9]: 6.3f} d:{c[10]: 6.3f} e:{c[11]: 6.3f} f:{c[12]: 6.3f} g:{c[13]: 6.3f} grp:{c[14]: 6.3f}"
     d = npz["scene_obs"]
-    red = f"red:  x:{d[6]: 5.2f} y:{d[7]: 5.2f} z:{d[8]: 5.2f} a:{d[9]: 5.2f} b:{d[10]: 5.2f} c:{d[11]: 5.2f}"
-    blue = f"blue: x:{d[12]: 5.2f} y:{d[13]: 5.2f} z:{d[14]: 5.2f} a:{d[15]: 5.2f} b:{d[16]: 5.2f} c:{d[17]: 5.2f}"
-    pink = f"pink: x:{d[18]: 5.2f} y:{d[19]: 5.2f} z:{d[20]: 5.2f} a:{d[21]: 5.2f} b:{d[22]: 5.2f} c:{d[23]: 5.2f}"
-    desk = f"door:{d[0]: 5.2f} drawer:{d[1]: 5.2f} button:{d[2]: 5.2f} switch:{d[3]: 5.2f} bulb:{d[4]: 5.2f} green:{d[5]: 5.2f}"
+    red = f"red:  x:{d[6]: 6.3f} y:{d[7]: 6.3f} z:{d[8]: 6.3f} a:{d[9]: 6.3f} b:{d[10]: 6.3f} c:{d[11]: 6.3f}"
+    blue = f"blue: x:{d[12]: 6.3f} y:{d[13]: 6.3f} z:{d[14]: 6.3f} a:{d[15]: 6.3f} b:{d[16]: 6.3f} c:{d[17]: 6.3f}"
+    pink = f"pink: x:{d[18]: 6.3f} y:{d[19]: 6.3f} z:{d[20]: 6.3f} a:{d[21]: 6.3f} b:{d[22]: 6.3f} c:{d[23]: 6.3f}"
+    desk = f"door:{d[0]: 6.3f} drawer:{d[1]: 6.3f} button:{d[2]: 6.3f} switch:{d[3]: 6.3f} bulb:{d[4]: 6.3f} green:{d[5]: 6.3f}"
     ann = []
     prev = ""
     if annotations is not None:
@@ -119,6 +119,10 @@ def numeric_fields(npz, idnum):
 
     if text is not None and index in text:
         ann.extend(text[index])
+
+    for i in range(len(ann)):
+        if len(ann[i]) > 78:
+            ann[i] = ann[i][:78]
 
     return "\n".join((indexstr, actions, rel_actions, robot_obs, robot_arm, red, blue, pink, desk, *ann))
 
