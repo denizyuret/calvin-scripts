@@ -1,8 +1,8 @@
 # Usage:
 # import mlp
 # import loaddata as ld
-# trn = ld.CalvinDataset('../data/D-training')
-# val = ld.CalvinDataset('../data/D-validation')
+# trn = ld.CalvinDataset('data/D-training')
+# val = ld.CalvinDataset('data/D-validation')
 # mlp.train(trn, val)
 
 import torch

@@ -7,7 +7,7 @@ from loaddata import int2task
 import rnn
 import mlp
 
-def top5(model, prefix='../data/D-validation', features=range(1,74)):
+def top5(model, prefix='data/D-validation', features=range(1,74)):
     model.eval()
     (data,pos2id,id2pos) = ld.loaddata(prefix)
     x = torch.tensor(data[:,features])
