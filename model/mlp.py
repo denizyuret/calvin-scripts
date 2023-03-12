@@ -1,8 +1,8 @@
 # Usage:
 # import mlp
 # import loaddata as ld
-# trn = ld.CalvinDataset('../data/D-training')
-# val = ld.CalvinDataset('../data/D-validation')
+# trn = ld.CalvinDataset('data/D-training')
+# val = ld.CalvinDataset('data/D-validation')
 # mlp.train(trn, val)
 
 import torch
@@ -89,12 +89,12 @@ def train(trn_set, val_set, num_classes=34, hidden=[512], batch_size=128, max_ep
     mlp = LitMLP((xsize, *hidden, num_classes), dropout=dropout, lr=lr, weight_decay=weight_decay)
     trn_loader = DataLoader(trn_set, batch_size=batch_size, shuffle=True,  num_workers=6)
     val_loader = DataLoader(val_set, batch_size=batch_size, shuffle=False, num_workers=6)
-    wandb_logger = WandbLogger(project='mlp_project', name=name)
-    wandb_logger.experiment.config["batch_size"] = batch_size
-    torch.set_float32_matmul_precision('medium')
+    #wandb_logger = WandbLogger(project='mlp_project', name=name)
+    #wandb_logger.experiment.config["batch_size"] = batch_size
     checkpoint_callback = ModelCheckpoint(monitor = "val_acc", mode = 'max')
-    trainer = pl.Trainer(accelerator='gpu', devices=1, callbacks=[checkpoint_callback], max_epochs=max_epochs, max_steps=max_steps, logger=wandb_logger)
+    torch.set_float32_matmul_precision('medium')
+    trainer = pl.Trainer(accelerator='gpu', devices=1, max_epochs=max_epochs, max_steps=max_steps, callbacks=[checkpoint_callback]) #, logger=wandb_logger)
     trainer.fit(mlp, trn_loader, val_loader)
-    wandb.finish()
+    #wandb.finish()
 
 

@@ -7,11 +7,11 @@ import numpy as np
 import pandas as pd
 import loaddata as ld
 
-lang, task2int, int2task = ld.loadlang('../data/ABCD-validation')
+lang, task2int, int2task = ld.loadlang('data/ABCD-validation')
 
-print('Loading ../data/ABCD-validation-preds.tsv.gz', file=sys.stderr)
+print('Loading data/ABCD-validation-preds.tsv.gz', file=sys.stderr)
 
-with gzip.open('../data/ABCD-validation-preds.tsv.gz', 'rt') as f:
+with gzip.open('data/ABCD-validation-preds.tsv.gz', 'rt') as f:
     preds = np.loadtxt(f, delimiter='\t', dtype='float32')
 
 preds_index = 0

@@ -11,10 +11,10 @@ import rnn
 
 parser = ArgumentParser(description="Evaluate a model on a dataset")
 parser.add_argument("model", type=str, help="Model checkpoint")
-parser.add_argument("-d", "--data", type=str, default="../data/D-validation")
+parser.add_argument("-d", "--data", type=str, default="data/D-validation")
 parser.add_argument("-i", "--instances_per_episode",  type=int, default=1)
 parser.add_argument("-c", "--context_length",  type=int, default=64)
-parser.add_argument("-f", "--features",  type=str, default="range(1,74)")
+parser.add_argument("-f", "--features",  type=str, default="range(1,98)")
 args = parser.parse_args()
 
 print(f"Loading model from {args.model}...", file=sys.stderr)

@@ -9,7 +9,7 @@ from argparse import ArgumentParser
 
 
 class CalvinIterableDataset(IterableDataset):
-    def __init__(self, prefix="../data/ABCD-training", features=range(1,74), instances_per_episode=32, context_length=32):
+    def __init__(self, prefix="data/ABCD-training", features=range(1,74), instances_per_episode=32, context_length=32):
         (self.data, self.pos2id, self.id2pos) = ld.loaddata(prefix)
         self.features = features
         self.instances_per_episode=instances_per_episode
@@ -26,7 +26,7 @@ class CalvinIterableDataset(IterableDataset):
 if __name__ == "__main__":
     parser = ArgumentParser(description="Output predictions of a model on a CALVIN dataset")
     parser.add_argument("-m", "--model", type=str, default="./mlp_project/i7t7yfv6/checkpoints/epoch=16-step=390422.ckpt", help="Model checkpoint")
-    parser.add_argument("-d", "--data",  type=str, default="../data/debug-validation", help="Prefix of data path")
+    parser.add_argument("-d", "--data",  type=str, default="data/debug-validation", help="Prefix of data path")
     args = parser.parse_args()
     tr = pl.Trainer(accelerator='gpu', devices=1, max_epochs=1)
     model = mlp.LitMLP.load_from_checkpoint(args.model)

@@ -11,7 +11,7 @@ class CalvinDataset(Dataset):
     Version 3: This has the same behavior as calvindataset() but is more memory efficient.
     It keeps only the raw data in memory and constructs the context for each instance as needed.
     """
-    def __init__(self, prefix='../data/debug-training', features=range(1,98), instances_per_episode=1, context_length=64):
+    def __init__(self, prefix='data/debug-training', features=range(1,98), instances_per_episode=1, context_length=64):
         # There are three indices for each frame:
         # 1. Frame id given in the filename (and first column of data), which may be discontinuous and not start from 0.
         # 2. Position in the `data` array. pos2id[2]=1 & id2pos[1]=2.
@@ -41,7 +41,7 @@ class CalvinDataset(Dataset):
         return len(self.target)
 
 
-def calvindataset(prefix='../data/debug-training', features=range(1,98), instances_per_episode=32, context_length=1):
+def calvindataset(prefix='data/debug-training', features=range(1,98), instances_per_episode=32, context_length=1):
     """
     Turn the last `instances_per_episode` frames of each episode into instances with `features` from the last `context_length` frames.
     Version 2: generalizes the three functions calvindataset1,2,3.
@@ -68,7 +68,7 @@ def calvindataset(prefix='../data/debug-training', features=range(1,98), instanc
     return TensorDataset(x,y,idx)
 
 
-def calvindataset1(prefix='../data/debug-training', features=range(1,98), window=32):
+def calvindataset1(prefix='data/debug-training', features=range(1,98), window=32):
     """
     Predict task from a single frame (picked anywhere from the last 32 frames associated with task)
     Version 1: deprecated, please use CalvinDataset(features, instances_per_episode=32, context_length=1)
@@ -91,7 +91,7 @@ def calvindataset1(prefix='../data/debug-training', features=range(1,98), window
 
 
 
-def calvindataset2(prefix='../data/debug-training', features=range(1,98), window=32):
+def calvindataset2(prefix='data/debug-training', features=range(1,98), window=32):
     """
     Predict annotation from the last 32 frames (out of 64 associated with the annotation).
     Version 1: deprecated, please use CalvinDataset(features, instances_per_episode=1, context_length=32)
@@ -114,7 +114,7 @@ def calvindataset2(prefix='../data/debug-training', features=range(1,98), window
 
 
 
-def calvindataset3(prefix='../data/debug-training', features=range(1,98), window=32, frames=4):
+def calvindataset3(prefix='data/debug-training', features=range(1,98), window=32, frames=4):
     """
     Predict annotation from 4 successive frames (picked anywhere from the last 32 frames associated with task).
     Version 1: deprecated, please use CalvinDataset(features, instances_per_episode=32, context_length=4)
