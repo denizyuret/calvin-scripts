@@ -1,4 +1,5 @@
 from importlib import reload
+from timeit import timeit
 import loaddata as ld
 import mlp
 import rnn

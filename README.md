@@ -32,6 +32,8 @@
 
 * `python calvin_scene_diff.py D/validation`: extract and normalize scene coordinate differences, saved in sdiff files.
 
+* `zcat data/ABC(D)-training.tsv.gz | perl calvin_scene_fix_abc(d).pl | gzip > data/ABC(D)fixed-training.tsv.gz`: fix the red-pink and red-blue swaps in scenes A and C respectively.
+
 ## calvin-files
 
 * episode_XXXXXXX.npz: Each frame is represented in a file named episode_idnum.npz, consecutive idnums indicate consecutive frames (with the exception of episode transitions I guess). Other files indicating the contents: 
