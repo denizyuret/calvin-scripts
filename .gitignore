@@ -16,6 +16,7 @@ model/mlp_project/
 slurm*
 archive/
 model/loaddata.py
+model/calvindataset.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

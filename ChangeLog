@@ -4,6 +4,7 @@
 	+ publish corrected data.
 	+ are annotations the same for D, ABC and ABCD for corresponding frames? No. only ABC-validation=ABCD-validation.
 	+ convert data loader to npz compressed.
+	- deprecate loaddata.py, eval.py not working with calvindataset.py?
 	- look at ABC trn D val confusion matrix what it mostly gets wrong.
 	- make validation subsets out of A,B,C as well and see if ABC model can do well with those.
 	- do feature ablation experiments to see what features it relies on.

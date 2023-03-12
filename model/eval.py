@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import sys
 from argparse import ArgumentParser
 import torch
@@ -5,16 +7,17 @@ import numpy as np
 import pytorch_lightning as pl
 from torch.utils.data import DataLoader
 from torchmetrics.functional.classification import multiclass_confusion_matrix, multiclass_accuracy
+from calvindataset import CalvinDataset
 import loaddata as ld
 import mlp
 import rnn
 
 parser = ArgumentParser(description="Evaluate a model on a dataset")
 parser.add_argument("model", type=str, help="Model checkpoint")
-parser.add_argument("-d", "--data", type=str, default="data/D-validation")
+parser.add_argument("-d", "--data", type=str, default="data/D-validation.npz")
 parser.add_argument("-i", "--instances_per_episode",  type=int, default=1)
 parser.add_argument("-c", "--context_length",  type=int, default=64)
-parser.add_argument("-f", "--features",  type=str, default="range(1,98)")
+parser.add_argument("-f", "--features",  type=str, default="range(0,97)")
 args = parser.parse_args()
 
 print(f"Loading model from {args.model}...", file=sys.stderr)
@@ -23,10 +26,10 @@ try:
 except TypeError:
     model = rnn.LitRNN.load_from_checkpoint(args.model)
 except:
-    error('Cannot load model')
+    sys.exit('Cannot load model')
 
 print(f"Loading data from {args.data}...", file=sys.stderr)
-data = ld.CalvinDataset(args.data, eval(args.features), args.instances_per_episode, args.context_length)
+data = CalvinDataset(args.data, eval(args.features), args.instances_per_episode, args.context_length)
 
 print(f"Running validation...", file=sys.stderr)
 tr = pl.Trainer(accelerator='gpu', devices=1, max_epochs=1)
@@ -53,7 +56,7 @@ for i in range(num_classes):
             print("  .", end="")
         else:
             print(f"{c[i,j]:>3}", end="")
-    print(f"{i:>3} {ld.int2task[i]} ({a[i]:.4f})")
+    print(f"{i:>3} {data.tasknames[i]} ({a[i]:.4f})")
 
 print(f"Saving data and predictions in eval.out...", file=sys.stderr)
 (x, *rest) = next(iter(DataLoader(data, batch_size=len(data))))
