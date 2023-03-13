@@ -1,8 +1,16 @@
+# Usage:
+# import rnn
+# from calvindataset import CalvinDataset
+# trn = CalvinDataset('data/D-training.npz')
+# val = CalvinDataset('data/D-validation.npz')
+# rnn.train(trn, val)
+
 import torch
 import torch.nn as nn
 import pytorch_lightning as pl
 from torch.optim import AdamW
 from torch.utils.data import DataLoader
+from torch.linalg import norm
 from pytorch_lightning.callbacks import ModelCheckpoint
 from torchmetrics import MeanMetric, MaxMetric, Accuracy
 from torch.nn.functional import cross_entropy, softmax
@@ -15,7 +23,7 @@ class LitRNN(pl.LightningModule):
     In particular, if output_interval==1, only the output/loss for the last step are computed.
     It is assumed that all time steps have the same target class.
     """
-    def __init__(self, input_size, hidden_size, num_classes, num_layers=1, bias=True, batch_first=True, dropout=0.0, weight_decay=0.0, lr=0.001, output_interval=-1):
+    def __init__(self, input_size, hidden_size, num_classes, num_layers=1, bias=True, batch_first=True, dropout=0.0, weight_decay=0.0, lr=0.0001, output_interval=-1):
         super().__init__()
         self.save_hyperparameters()    # need this to load from checkpoints
         self.__dict__.update(locals()) # convert each local variable (incl args) to self.var
@@ -31,14 +39,14 @@ class LitRNN(pl.LightningModule):
         self.hp_metric = MaxMetric()
 
     def configure_optimizers(self):
-        optimizer = torch.optim.AdamW(self.parameters(), lr=self.lr, weight_decay=self.weight_decay)
+        optimizer = AdamW(self.parameters(), lr=self.lr, weight_decay=self.weight_decay)
         return optimizer
 
-    def forward(self, x):
+    def forward(self, x):       # (B,T,X) => (B,T,C)
         lstm_out, (h_n, c_n) = self.lstm(x)
         return self.proj(lstm_out)
 
-    def predict_step(self, batch, batch_idx):
+    def predict_step(self, batch, batch_idx): # (B,T,X) => (B,T,C)
         x, *rest = batch
         return (softmax(self(x), dim=2), *rest)
 
@@ -81,7 +89,7 @@ class LitRNN(pl.LightningModule):
             x.reset()
 
     def training_step(self, batch, batch_idx):
-        self.wnorm.update(torch.linalg.vector_norm(self.proj[-1].weight))
+        self.wnorm.update(norm(self.proj[-1].weight))
         return self.step(batch, self.trn_loss, self.trn_acc)
 
     def validation_step(self, batch, batch_idx):
@@ -101,9 +109,9 @@ class LitRNN(pl.LightningModule):
 
 
 # Given trn and val datasets and optional hyperparameters, train and return an rnn
-def train(trn_set, val_set, batch_size=128, max_epochs=-1, max_steps=-1, name=None,
+def train(trn_set, val_set, batch_size=32, max_epochs=-1, max_steps=-1, name=None,
           hidden_size=512, num_classes=34, num_layers=2, bias=True, batch_first=True,
-          dropout=0.5, weight_decay=0.1, lr=0.001, output_interval=16):
+          dropout=0.5, weight_decay=0.1, lr=0.0001, output_interval=16):
     global trainer, rnn, trn_loader, val_loader #DBG
     input_size = trn_set[0][0].shape[1]
     rnn = LitRNN(input_size, hidden_size, num_classes, num_layers, bias, batch_first, dropout, weight_decay, lr, output_interval)

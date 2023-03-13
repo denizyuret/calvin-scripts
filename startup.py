@@ -1,5 +1,6 @@
 from importlib import reload
 from timeit import timeit
+from calvindataset import CalvinDataset
 import loaddata as ld
 import mlp
 import rnn
