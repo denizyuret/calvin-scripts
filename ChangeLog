@@ -1,12 +1,13 @@
 2023-03-13  dyuret  <dyuret@login03.kuacc.ku.edu.tr>
 
 	* Leaderboard:
-	RNNABC	.8912	lightning_logs/version_4853865/checkpoints/epoch=116-step=65403.ckpt	{'batch_size': 32, 'hidden_size': 256, 'num_layers': 2, 'output_interval': 32, 'lr': 0.0001, 'max_steps': 100000, 'dropout': 0.1, 'weight_decay': 2.0}
-	MLPABC	.8863	mlp_project/glfqykq5/checkpoints/epoch=10-step=49148.ckpt	{'batch_size': 32, 'hidden': [256], 'lr': 0.0001, 'max_steps': 100000, 'dropout': 0.75, 'weight_decay': 0.5}{'instances_per_episode': 8, 'context_length': 64, 'features': range(0, 97)}
-4858416.94362	RNNABCD	.9486	lightning_logs/version_4854077/checkpoints/epoch=91-step=66056.ckpt	{'batch_size': 32, 'lr': 0.0001, 'max_steps': 100000, 'hidden_size': 512, 'num_layers': 4, 'output_interval': 4, 'dropout': 0.1, 'weight_decay': 0.05}
-4858427.92891	MLPABCD	.9466	lightning_logs/version_4854088/checkpoints/epoch=15-step=91872.ckpt	{'batch_size': 32, 'lr': 0.0001, 'max_steps': 100000, 'hidden': [128, 128], 'dropout': 0.25, 'weight_decay': 0}{'instances_per_episode': 8, 'context_length': 64, 'features': range(0, 97)}
+	RNNABC	.9011	lightning_logs/version_4880581/checkpoints/epoch=128-step=72111.ckpt 	{'batch_size': 32, 'lr': 0.0001, 'max_steps': 100000, 'hidden_size': 256, 'num_layers': 3, 'output_interval': 32, 'dropout': 0.1, 'weight_decay': 1.5}{'instances_per_episode': 1, 'context_length': 64, 'features': range(0, 97)}
+	MLPABC	.9139	lightning_logs/version_4880570/checkpoints/epoch=20-step=93828.ckpt	{'batch_size': 32, 'lr': 0.0001, 'max_steps': 100000, 'hidden': [512, 512], 'dropout': 0.5, 'weight_decay': 1.0}{'instances_per_episode': 8, 'context_length': 64, 'features': range(0, 97)}
+	RNNABCD	.9496	lightning_logs/version_4866737/checkpoints/epoch=48-step=35182.ckpt	{'batch_size': 32, 'lr': 0.0001, 'max_steps': 100000, 'hidden_size': 512, 'num_layers': 4, 'output_interval': 8, 'dropout': 0, 'weight_decay': 0.1}{'instances_per_episode': 1, 'context_length': 64, 'features': range(0, 97)}
+	MLPABCD	.9476	lightning_logs/version_4867417/checkpoints/epoch=15-step=91872.ckpt	{'batch_size': 32, 'lr': 0.0001, 'max_steps': 100000, 'hidden': [512, 512], 'dropout': 0.5, 'weight_decay': 0.25}{'instances_per_episode': 8, 'context_length': 64, 'features': range(0, 97)}
 	RNND	.9604	lightning_logs/version_4858151/checkpoints/epoch=458-step=73899.ckpt 	{'batch_size': 32, 'lr': 0.0001, 'max_steps': 100000, 'hidden_size': 256, 'num_layers': 2, 'output_interval': 1, 'dropout': 0.4, 'weight_decay': 0.25}{'instances_per_episode': 1, 'context_length': 64, 'features': range(0, 97)}
 	MLPD	.9446	lightning_logs/version_4858205/checkpoints/epoch=63-step=41024.ckpt -c40	{'batch_size': 32, 'lr': 0.0001, 'max_steps': 100000, 'hidden': [512, 512], 'dropout': 0.25, 'weight_decay': 0}{'instances_per_episode': 4, 'context_length': 40, 'features': range(0, 97)}
+
 
 2023-03-12  dyuret  <dyuret@login03.kuacc.ku.edu.tr>
 
@@ -14,7 +15,8 @@
 	+ publish corrected data.
 	+ are annotations the same for D, ABC and ABCD for corresponding frames? No. only ABC-validation=ABCD-validation.
 	+ convert data loader to npz compressed.
-	- deprecate loaddata.py, eval.py not working with calvindataset.py?
+	+ eval.py not working with calvindataset.py?
+	- deprecate loaddata.py
 	- look at ABC trn D val confusion matrix what it mostly gets wrong.
 	- make validation subsets out of A,B,C as well and see if ABC model can do well with those.
 	- do feature ablation experiments to see what features it relies on.
