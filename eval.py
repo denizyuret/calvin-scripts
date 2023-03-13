@@ -44,7 +44,6 @@ index = torch.cat([x[2] for x in p])
 num_classes = 34
 if isinstance(model, rnn.LitRNN):
     preds = preds[:,-1,:]
-print(multiclass_accuracy(preds, target, num_classes, average='micro').item())
 a = multiclass_accuracy(preds, target, num_classes, average='none')
 c = multiclass_confusion_matrix(preds, target, num_classes)
 for j in range(num_classes):
@@ -57,6 +56,8 @@ for i in range(num_classes):
         else:
             print(f"{c[i,j]:>3}", end="")
     print(f"{i:>3} {data.tasknames[i]} ({a[i]:.4f})")
+
+print(multiclass_accuracy(preds, target, num_classes, average='micro').item())
 
 print(f"Saving data and predictions in eval.out...", file=sys.stderr)
 (x, *rest) = next(iter(DataLoader(data, batch_size=len(data))))
