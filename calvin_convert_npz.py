@@ -46,6 +46,7 @@ a = np.load(lang_path, allow_pickle=True).item()
 lang = np.array([(start, end, task2int[task], annot) for
                  ((start, end), task, annot) in zip(a['info']['indx'], a['language']['task'], a['language']['ann'])],
                 dtype=[('start', '<i4'), ('end', '<i4'), ('taskid', '<i8'), ('instruction', 'O')])
+lang.sort(order='end')
          
 tsv_gz_path = f"{args.data}/{args.dataset}-{args.split}"
 print(f"Reading {tsv_gz_path}...", file=sys.stderr)
