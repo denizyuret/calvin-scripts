@@ -20,11 +20,8 @@ class LitMLP(pl.LightningModule):
     def __init__(self, sizes, dropout=0.0, weight_decay=0.0, lr=0.0001):
         super().__init__()
         self.save_hyperparameters() # need this to load from checkpoints
-        self.sizes = sizes
+        self.__dict__.update(locals()) # convert each local variable (incl args) to self.var
         self.num_classes = sizes[-1]
-        self.lr = lr
-        self.weight_decay = weight_decay
-        self.dropout = dropout
 
         self.mlp = nn.Sequential()
         self.mlp.append(nn.Flatten())
