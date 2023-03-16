@@ -1,15 +1,91 @@
 2023-03-16  dyuret  <dyuret@login03.kuacc.ku.edu.tr>
 
 	* TODO:
+	- transformer
+	- transformer hparam opt
 	- integrate 2frame into calvindataset as an option
 	- create an option that will compute and use differences of n frames as features
 	- create an option that will take a subset of instances for learning curve
-	- transformer
-	- transformer hparam opt
 	- finish mlp feature exp with abcd
 	- rnn and transformer feature exp
 	- deprecate loaddata.py
 	- Inputs: try different representations (voxels & convolution?)
+	- Learning curve experiments.
+
+	* Transformers:
+	- Karpathy: implements from scratch, may not be efficient: https://github.com/karpathy/nanoGPT,miniGPT
+	- Pytorch-examples: https://github.com/pytorch/examples/tree/main/word_language_model
+	- Huggingface: https://github.com/huggingface/transformers.git
+	- Huggingface/Accelerator: https://github.com/huggingface/accelerate (alternative to Lightning?)
+	- Huggingface/Optimum: https://github.com/huggingface/optimum (quantization and pruning)
+	- https://github.com/huggingface/notebooks: educational
+	- https://github.com/huggingface/course: educational
+	- https://github.com/huggingface/llm_training_handbook: educational
+
+	* word_language_model: https://github.com/pytorch/examples/tree/main/word_language_model
+	python -mpdb main.py --cuda --epochs 6 --model Transformer --lr 5
+	defaults:
+	--emsize=200
+	--nhid=200
+	--nlayers=2
+	--lr=20 (what kind of optimizer?)
+	--clip=0.25
+	--epochs=40
+	--batch_size=20
+	--bptt=35 (sequence length)
+	--dropout=0.2
+	--nhead=2
+	--tied=not used in transformers
+	ntokens = len(corpus.dictionary)
+
+	TransformerModel(
+	ntoken=ntokens,	;33278
+	ninp=args.emsize,	;200
+	nhead=args.nhead,	;2
+	nhid=args.nhid,	;200
+	nlayers=args.nlayers,	;2
+	dropout=args.dropout).to(device)
+
+	TransformerEncoderLayer(
+	d_model = ninp = 200
+	nhead = nhead = 2
+	dim_feedforward = nhid = 200
+	dropout = 0.2	; the rest is defaults
+	activation = relu
+	layer_norm_eps = 1e-5
+	batch_first = False
+	norm_first = False)
+
+	TransformerEncoderLayer.forward(src, src_mask=None, src_key_padding_mask=None, is_causal=False)
+	TransformerEncoder(encoder_layer, num_layers, norm=None, enable_nested_tensor=True, mask_check=True)
+	? src_mask vs src_key_padding_mask
+	? is_causal
+	? order of ops in forward
+	? norm=None
+	? enable_nested_tensor?
+	? mask_check?
+
+	self.ninp=200
+	nlayers=2
+	self.encoder=Embedding(ntoken=33278,ninp=200)
+	self.decoder=Linear(ninp=200->ntoken=33278)
+	nhead=2
+	nhid=200
+	dropout=0.2
+
+	forward(src=T:35,B:20,int64 has_mask=True)
+	mask=35,35,float32 with 0 lower-left, -inf upper-right triangular (diagonal=0)
+	src = self.encoder(src=35,20,int64) * math.sqrt(self.ninp=200)
+	=> src=35,20,200,float32 (T,B,H)
+	src = self.pos_encoder(src)
+	=> src=35,20,200,float32
+	output = self.transformer_encoder(src, self.src_mask)
+	=> output=35,20,200,float32
+	output = self.decoder(output)
+	=> output=35,20,33278,float32
+	return F.log_softmax(output, dim=-1)
+	=> return=35,20,33278,float32, normalized in vocab dimension
+
 
 2023-03-15  dyuret  <dyuret@login03.kuacc.ku.edu.tr>
 
