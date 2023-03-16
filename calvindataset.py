@@ -48,7 +48,7 @@ class CalvinDataset(Dataset):
 
     def __getitem__(self, index):
         i = self.data_index[index]
-        inputs = self.data[i-self.context_length+1:i+1,:]
+        inputs = self.data[(i-self.context_length+1):(i+1),:].copy()
         inputs = self.normalize(inputs)
         inputs = inputs[:, self.features]
         inputs = torch.from_numpy(inputs)

@@ -1,3 +1,148 @@
+2023-03-15  dyuret  <dyuret@login03.kuacc.ku.edu.tr>
+
+	* mlp-d-features.py: Yesterday's two scene frame experiments gave confusing results:
+	- On ABC they got .88, close to full-feature .91 showing two scene frames enough.
+	- On D they got .70, significantly lower than full-feature .95.
+	- On D using multiple frames instead of two with scene features also gave .70.
+	= To understand what is going on: do some feature ablation experiments on D.
+	- Analyze the confusion matrix for D.
+
+	sizes,dropout,weight_decay,lr,hp_metric
+	"(4672, 512, 512, 34)",0.5,0.1,0.0001,0.9584569931030273 excl=scn
+	"(5952, 512, 512, 34)",0.5,0.1,0.0001,0.9545004963874817 excl=grp
+	"(5824, 512, 512, 34)",0.5,0.1,0.0001,0.9515331387519836 excl=act
+	"(5440, 512, 512, 34)",0.5,0.1,0.0001,0.950543999671936  excl=cont
+	"(5696, 512, 512, 34)",0.5,0.1,0.0001,0.950543999671936  excl=tact
+	"(5824, 512, 512, 34)",0.5,0.1,0.0001,0.9495549201965332 excl=tcp
+	"(5824, 512, 512, 34)",0.5,0.1,0.0001,0.9485657811164856 excl=ract
+	"(6208, 512, 512, 34)",0.5,0.1,0.0001,0.9485657811164856 excl=none
+	"(5760, 512, 512, 34)",0.5,0.1,0.0001,0.947576642036438  excl=arm
+	"(1536, 512, 512, 34)",0.5,0.1,0.0001,0.9208704233169556 incl=sdiff
+	"(4672, 512, 512, 34)",0.5,0.1,0.0001,0.9179030656814575 excl=sdiff
+	"(1536, 512, 512, 34)",0.5,0.1,0.0001,0.7200791239738464 incl=scn
+	"(448, 512, 512, 34)",0.5,0.1,0.0001,0.5806132555007935  incl=arm
+	"(384, 512, 512, 34)",0.5,0.1,0.0001,0.5410484671592712  incl=tcp
+	"(384, 512, 512, 34)",0.5,0.1,0.0001,0.5370919704437256  incl=act
+	"(384, 512, 512, 34)",0.5,0.1,0.0001,0.5341246128082275  incl=ract
+	"(256, 512, 512, 34)",0.5,0.1,0.0001,0.2502472698688507  incl=grp
+	"(768, 512, 512, 34)",0.5,0.1,0.0001,0.24431255459785461 incl=cont
+	"(512, 512, 512, 34)",0.5,0.1,0.0001,0.21661721169948578 incl=tact
+
+	- sdiff seems most important, scn least? how can it not learn to derive sdiff from scn?
+	- scn only is second best so maybe it does. but the diff is huge: .92 vs .72
+	- let's look at include2 and exclude2
+
+	sizes,dropout,weight_decay,lr,hp_metric
+	"(4288, 512, 512, 34)",0.5,0.1,0.0001,0.9614243507385254 333 excl=scn+tcp
+	"(4416, 512, 512, 34)",0.5,0.1,0.0001,0.9594460725784302 330 excl=scn+grp
+	"(3904, 512, 512, 34)",0.5,0.1,0.0001,0.9584569931030273 336 excl=scn+cont
+	"(4288, 512, 512, 34)",0.5,0.1,0.0001,0.9574678540229797 332 excl=scn+ract
+	"(4672, 512, 512, 34)",0.5,0.1,0.0001,0.9574678540229797 335 excl=scn
+	"(4672, 512, 512, 34)",0.5,0.1,0.0001,0.9574678540229797 339 excl=scn
+	"(4288, 512, 512, 34)",0.5,0.1,0.0001,0.9564787149429321 331 excl=scn+act
+	"(4224, 512, 512, 34)",0.5,0.1,0.0001,0.9554896354675293 334 excl=scn+arm
+	"(4160, 512, 512, 34)",0.5,0.1,0.0001,0.9545004963874817 337 excl=scn+tact
+	"(1984, 512, 512, 34)",0.5,0.1,0.0001,0.9446092844009399 323 incl=sdiff+arm
+	"(1920, 512, 512, 34)",0.5,0.1,0.0001,0.9426310658454895 322 incl=sdiff+tcp
+	"(1920, 512, 512, 34)",0.5,0.1,0.0001,0.9416419267654419 320 incl=sdiff+act
+	"(1920, 512, 512, 34)",0.5,0.1,0.0001,0.9406528472900391 321 incl=sdiff+ract
+	"(4416, 512, 512, 34)",0.5,0.1,0.0001,0.9357072114944458 340 excl=sdiff+grp
+	"(2048, 512, 512, 34)",0.5,0.1,0.0001,0.9337289929389954 326 incl=sdiff+tact
+	"(1792, 512, 512, 34)",0.5,0.1,0.0001,0.9277942776679993 319 incl=sdiff+grp
+	"(3072, 512, 512, 34)",0.5,0.1,0.0001,0.9218595623970032 291 incl=scn+sdiff
+	"(1536, 512, 512, 34)",0.5,0.1,0.0001,0.9188922047615051 328 incl=sdiff
+	"(3904, 512, 512, 34)",0.5,0.1,0.0001,0.9188922047615051 346 excl=sdiff+cont
+	"(2304, 512, 512, 34)",0.5,0.1,0.0001,0.9179030656814575 325 incl=sdiff+cont
+	"(1536, 512, 512, 34)",0.5,0.1,0.0001,0.9169139266014099 327 incl=sdiff
+	"(4288, 512, 512, 34)",0.5,0.1,0.0001,0.9169139266014099 341 excl=sdiff+act
+	"(4288, 512, 512, 34)",0.5,0.1,0.0001,0.9169139266014099 342 excl=sdiff+ract
+	"(4288, 512, 512, 34)",0.5,0.1,0.0001,0.9159248471260071 343 excl=sdiff+tcp
+	"(3072, 512, 512, 34)",0.5,0.1,0.0001,0.912957489490509  324 incl=sdiff+scn
+	"(4160, 512, 512, 34)",0.5,0.1,0.0001,0.912957489490509  347 excl=sdiff+tact
+	"(4672, 512, 512, 34)",0.5,0.1,0.0001,0.912957489490509  349 excl=sdiff
+	"(4672, 512, 512, 34)",0.5,0.1,0.0001,0.909990131855011  350 excl=sdiff
+	"(4224, 512, 512, 34)",0.5,0.1,0.0001,0.9060336351394653 344 excl=sdiff+arm
+	"(1984, 512, 512, 34)",0.5,0.1,0.0001,0.8704253435134888 287 incl=scn+arm
+	"(1920, 512, 512, 34)",0.5,0.1,0.0001,0.860534131526947  285 incl=scn+ract
+	"(1920, 512, 512, 34)",0.5,0.1,0.0001,0.8417408466339111 283 incl=scn+act
+	"(1920, 512, 512, 34)",0.5,0.1,0.0001,0.8397626280784607 286 incl=scn+tcp
+	"(2048, 512, 512, 34)",0.5,0.1,0.0001,0.7952522039413452 290 incl=scn+tact
+	"(1792, 512, 512, 34)",0.5,0.1,0.0001,0.7764589786529541 282 incl=scn+grp
+	"(1536, 512, 512, 34)",0.5,0.1,0.0001,0.727992057800293  288 incl=scn
+	"(1536, 512, 512, 34)",0.5,0.1,0.0001,0.7250247001647949 292 incl=scn
+	"(2304, 512, 512, 34)",0.5,0.1,0.0001,0.7161226272583008 289 incl=scn+cont
+	"(3136, 512, 512, 34)",0.5,0.1,0.0001,0.6152324676513672 345 excl=sdiff+scn
+	"(3136, 512, 512, 34)",0.5,0.1,0.0001,0.6083086133003235 338 excl=scn+sdiff
+
+	- Obviously scn and sdiff are the most important, if both are missing we go .90->.60.
+	- sdiff more useful than scn, having both is unnecessary and redundant?
+	- excluding scn+tact (act,arm,tact) gives the biggest drop in scn+ group, tact is the least redundant with sdiff?
+	- excluding scn+tcp (grp,cont,ract) gives even better result than scn alone.
+	- excluding sdiff+arm gives the biggest drop in sdiff+ group, arm is the least redundant scn?
+	- including sdiff+(arm,tcp,act,ract) gives the biggest boost. .94+
+	- including sdiff+(tact,grp,cont) gives a bit less, cont almost none.
+	- (sdiff,scn) is the scene group, sdiff is more useful, why?.
+	- (arm,tcp,act,ract) is the robot group, arm is most useful, slightly more than others, why?.
+	- (tact,cont,grp) is the rest, tact seems most useful.
+
+	* mlp-abc: let's repeat the same experiments with abc:
+
+	- Very different results:
+	- scn seems a lot more important than sdiff.
+	- having them both seems to be useful, incl scn+sdiff is best.
+	- excluding act has the biggest impact after excluding scn. excluding sdiff seems to improve!
+
+	sizes,dropout,weight_decay,lr,hp_metric
+	"(5440, 512, 512, 34)",0.5,1.0,0.0001,0.9264342188835144 500 excl=cont
+	"(4672, 512, 512, 34)",0.5,1.0,0.0001,0.9117210507392883 502 excl=sdiff
+	"(6208, 512, 512, 34)",0.5,1.0,0.0001,0.8916913866996765 503 excl=none
+	"(5696, 512, 512, 34)",0.5,1.0,0.0001,0.8814292550086975 501 excl=tact
+	"(3072, 512, 512, 34)",0.5,1.0,0.0001,0.8592977523803711 488 incl=sdiff+scn
+	"(3072, 512, 512, 34)",0.5,1.0,0.0001,0.8569485545158386 481 incl=scn+sdiff
+	"(5760, 512, 512, 34)",0.5,1.0,0.0001,0.854846715927124  498 excl=arm
+	"(5824, 512, 512, 34)",0.5,1.0,0.0001,0.8503956198692322 496 excl=ract
+	"(5824, 512, 512, 34)",0.5,1.0,0.0001,0.850271999835968  497 excl=tcp
+	"(5952, 512, 512, 34)",0.5,1.0,0.0001,0.8486647009849548 494 excl=grp
+	"(1920, 512, 512, 34)",0.5,1.0,0.0001,0.8482937812805176 476 incl=scn+tcp
+	"(1920, 512, 512, 34)",0.5,1.0,0.0001,0.8461918830871582 474 incl=scn+act
+	"(5824, 512, 512, 34)",0.5,1.0,0.0001,0.8360534310340881 495 excl=act
+	"(1984, 512, 512, 34)",0.5,1.0,0.0001,0.830118715763092  477 incl=scn+arm
+	"(1920, 512, 512, 34)",0.5,1.0,0.0001,0.8293768763542175 475 incl=scn+ract
+	"(1984, 512, 512, 34)",0.5,1.0,0.0001,0.8084816932678223 487 incl=sdiff+arm
+	"(1536, 512, 512, 34)",0.5,1.0,0.0001,0.7915430068969727 469 incl=sdiff
+	"(1536, 512, 512, 34)",0.5,1.0,0.0001,0.7884520292282104 491 incl=sdiff
+	"(1920, 512, 512, 34)",0.5,1.0,0.0001,0.7882047295570374 485 incl=sdiff+ract
+	"(2048, 512, 512, 34)",0.5,1.0,0.0001,0.7844955325126648 490 incl=sdiff+tact
+	"(1536, 512, 512, 34)",0.5,1.0,0.0001,0.7757171392440796 493 incl=sdiff
+	"(1920, 512, 512, 34)",0.5,1.0,0.0001,0.7737388610839844 484 incl=sdiff+act
+	"(1792, 512, 512, 34)",0.5,1.0,0.0001,0.7707715034484863 483 incl=sdiff+grp
+	"(1920, 512, 512, 34)",0.5,1.0,0.0001,0.7611275911331177 486 incl=sdiff+tcp
+	"(4672, 512, 512, 34)",0.5,1.0,0.0001,0.738254189491272  499 excl=scn
+	"(2048, 512, 512, 34)",0.5,1.0,0.0001,0.7381305694580078 480 incl=scn+tact
+	"(1792, 512, 512, 34)",0.5,1.0,0.0001,0.7345449924468994 473 incl=scn+grp
+	"(1536, 512, 512, 34)",0.5,1.0,0.0001,0.6709940433502197 478 incl=scn
+	"(1536, 512, 512, 34)",0.5,1.0,0.0001,0.6687685251235962 466 incl=scn
+	"(1536, 512, 512, 34)",0.5,1.0,0.0001,0.659866452217102  482 incl=scn
+	"(2304, 512, 512, 34)",0.5,1.0,0.0001,0.6543026566505432 479 incl=scn+cont
+	"(2304, 512, 512, 34)",0.5,1.0,0.0001,0.5395647883415222 489 incl=sdiff+cont
+	"(384, 512, 512, 34)",0.5,1.0,0.0001,0.47205737233161926 462 incl=ract
+	"(384, 512, 512, 34)",0.5,1.0,0.0001,0.4540059268474579  464 incl=tcp
+	"(384, 512, 512, 34)",0.5,1.0,0.0001,0.4485657811164856  461 incl=act
+	"(448, 512, 512, 34)",0.5,1.0,0.0001,0.4483185112476349  465 incl=arm
+	"(512, 512, 512, 34)",0.5,1.0,0.0001,0.25                468 incl=tact
+	"(768, 512, 512, 34)",0.5,1.0,0.0001,0.20697329938411713 467 incl=cont
+	"(256, 512, 512, 34)",0.5,1.0,0.0001,0.16765578091144562 460 incl=grp
+
+
+2023-03-14  dyuret  <dyuret@login03.kuacc.ku.edu.tr>
+
+	* TwoFrameDataset:
+	MLPABC2	.8803	lightning_logs/version_4881634/checkpoints/epoch=170-step=95589.ckpt -f'range(29,53)' -c32 -f'range(29,53)'	{'batch_size': 32, 'lr': 0.0001, 'max_steps': 100000, 'hidden': [512, 512], 'dropout': 0.25, 'weight_decay': 0}{'context_length': 32, 'features': range(29, 53)}
+	MLPD2	.7074?	4881674? mlp-d6 overfitting? two frames {'batch_size': 32, 'lr': 0.0001, 'max_steps': 100000, 'hidden': [512, 512], 'dropout': 0.75, 'weight_decay': 0.5}{'context_length': 48, 'features': range(29, 53)}
+	MLPD2x	.7062	4881870? mlp-d8 cover same range but all frames drop0.25, wdec0.1 {'batch_size': 32, 'lr': 0.0001, 'max_steps': 100000, 'hidden': [512, 512], 'dropout': 0.25, 'weight_decay': 0.1}{'context_length': 32, 'features': range(29, 53)}
+	MLPD2x  .6597   4881877 mlp-d9  same as d8 drop0.5 wdec1.0 {'batch_size': 32, 'lr': 0.0001, 'max_steps': 100000, 'hidden': [512, 512], 'dropout': 0.5, 'weight_decay': 1.0}{'context_length': 32, 'features': range(29, 53)}
+	MLPABC2x .7626  4881872? mlp-abc4 cover same range but all frames {'batch_size': 32, 'lr': 0.0001, 'max_steps': 100000, 'hidden': [512, 512], 'dropout': 0.5, 'weight_decay': 1.0}
+
 2023-03-13  dyuret  <dyuret@login03.kuacc.ku.edu.tr>
 
 	* Leaderboard:
@@ -6,7 +151,7 @@
 	RNNABCD	.9496	lightning_logs/version_4866737/checkpoints/epoch=48-step=35182.ckpt	{'batch_size': 32, 'lr': 0.0001, 'max_steps': 100000, 'hidden_size': 512, 'num_layers': 4, 'output_interval': 8, 'dropout': 0, 'weight_decay': 0.1}{'instances_per_episode': 1, 'context_length': 64, 'features': range(0, 97)}
 	MLPABCD	.9476	lightning_logs/version_4867417/checkpoints/epoch=15-step=91872.ckpt	{'batch_size': 32, 'lr': 0.0001, 'max_steps': 100000, 'hidden': [512, 512], 'dropout': 0.5, 'weight_decay': 0.25}{'instances_per_episode': 8, 'context_length': 64, 'features': range(0, 97)}
 	RNND	.9604	lightning_logs/version_4858151/checkpoints/epoch=458-step=73899.ckpt 	{'batch_size': 32, 'lr': 0.0001, 'max_steps': 100000, 'hidden_size': 256, 'num_layers': 2, 'output_interval': 1, 'dropout': 0.4, 'weight_decay': 0.25}{'instances_per_episode': 1, 'context_length': 64, 'features': range(0, 97)}
-	MLPD	.9446	lightning_logs/version_4858205/checkpoints/epoch=63-step=41024.ckpt -c40	{'batch_size': 32, 'lr': 0.0001, 'max_steps': 100000, 'hidden': [512, 512], 'dropout': 0.25, 'weight_decay': 0}{'instances_per_episode': 4, 'context_length': 40, 'features': range(0, 97)}
+	MLPD	.9525	lightning_logs/version_4881657/checkpoints/epoch=412-step=66493.ckpt	{'batch_size': 32, 'lr': 0.0001, 'max_steps': 100000, 'hidden': [512, 512], 'dropout': 0.6, 'weight_decay': 0.15}{'instances_per_episode': 1, 'context_length': 64, 'features': range(0, 97)}
 
 
 2023-03-12  dyuret  <dyuret@login03.kuacc.ku.edu.tr>
