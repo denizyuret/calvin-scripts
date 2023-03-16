@@ -1,3 +1,16 @@
+2023-03-16  dyuret  <dyuret@login03.kuacc.ku.edu.tr>
+
+	* TODO:
+	- integrate 2frame into calvindataset as an option
+	- create an option that will compute and use differences of n frames as features
+	- create an option that will take a subset of instances for learning curve
+	- transformer
+	- transformer hparam opt
+	- finish mlp feature exp with abcd
+	- rnn and transformer feature exp
+	- deprecate loaddata.py
+	- Inputs: try different representations (voxels & convolution?)
+
 2023-03-15  dyuret  <dyuret@login03.kuacc.ku.edu.tr>
 
 	* mlp-d-features.py: Yesterday's two scene frame experiments gave confusing results:
@@ -161,12 +174,10 @@
 	+ are annotations the same for D, ABC and ABCD for corresponding frames? No. only ABC-validation=ABCD-validation.
 	+ convert data loader to npz compressed.
 	+ eval.py not working with calvindataset.py?
-	- deprecate loaddata.py
-	- look at ABC trn D val confusion matrix what it mostly gets wrong.
-	- make validation subsets out of A,B,C as well and see if ABC model can do well with those.
-	- do feature ablation experiments to see what features it relies on.
-	- Inputs: try different subsets
-	- Inputs: try different representations (voxels & convolution?)
+	+ look at ABC trn D val confusion matrix what it mostly gets wrong.
+	x make validation subsets out of A,B,C as well and see if ABC model can do well with those.
+	+ do feature ablation experiments to see what features it relies on.
+	+ Inputs: try different subsets
 
 	* Leaderboard: After fixing the color-swap bug (x marks runs with buggy dataset for comparison):
 	RNNABC	.8912	lightning_logs/version_4853865/checkpoints/epoch=116-step=65403.ckpt	{'batch_size': 32, 'hidden_size': 256, 'num_layers': 2, 'output_interval': 32, 'lr': 0.0001, 'max_steps': 100000, 'dropout': 0.1, 'weight_decay': 2.0}
