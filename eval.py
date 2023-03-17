@@ -11,6 +11,7 @@ from calvindataset import CalvinDataset
 import loaddata as ld
 import mlp
 import rnn
+import sequence_classifier as sc
 
 parser = ArgumentParser(description="Evaluate a model on a dataset")
 parser.add_argument("model", type=str, help="Model checkpoint")
@@ -23,16 +24,23 @@ args = parser.parse_args()
 print(f"Loading model from {args.model}...", file=sys.stderr)
 try:
     model = mlp.LitMLP.load_from_checkpoint(args.model)
-except TypeError:
-    model = rnn.LitRNN.load_from_checkpoint(args.model)
+    print("Loaded LitMLP.", file=sys.stderr)
 except:
-    sys.exit('Cannot load model')
+    try:
+        model = rnn.LitRNN.load_from_checkpoint(args.model)
+        print("Loaded LitRNN.", file=sys.stderr)
+    except:
+        try:
+            model = sc.SequenceClassifier.load_from_checkpoint(args.model)
+            print(f"Loaded {model.model} SequenceClassifier.", file=sys.stderr)
+        except:
+            sys.exit('Cannot load model')
 
 print(f"Loading data from {args.data}...", file=sys.stderr)
 data = CalvinDataset(args.data, eval(args.features), args.instances_per_episode, args.context_length)
 
 print(f"Running validation...", file=sys.stderr)
-tr = pl.Trainer(accelerator='gpu', devices=1, max_epochs=1)
+tr = pl.Trainer(accelerator='gpu', devices=1, max_epochs=1, logger=False)
 v = tr.validate(model, DataLoader(data, batch_size=1024))
 print(v)
 
