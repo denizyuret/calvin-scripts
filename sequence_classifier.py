@@ -15,10 +15,12 @@ class SequenceClassifier(pl.LightningModule):
     all models use: input_size, hidden_size, num_classes, num_layers
     """
     def __init__(self, input_size, hidden_size, num_classes, num_layers=1,
-                 num_heads=1, dim_feedforward=0, # transformer specific
+                 num_heads=1, dim_feedforward=-1, # transformer specific
                  dropout=0.0, weight_decay=0.0, lr=0.0001, model="MLP"):
-        if dim_feedforward == 0:
-            dim_feedforward = 4*hidden_size
+        if hidden_size % num_heads != 0:
+            hidden_size = num_heads * (hidden_size // num_heads + 1)
+        if dim_feedforward <= 0:
+            dim_feedforward = 4 * hidden_size
         super().__init__()
         self.save_hyperparameters()    # need this to load from checkpoints
         self.__dict__.update(locals()) # convert each local variable (incl args) to self.var
