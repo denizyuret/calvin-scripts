@@ -1,14 +1,27 @@
-2023-03-17  dyuret  <dyuret@login03.kuacc.ku.edu.tr>
+2023-03-18  dyuret  <dyuret@login03.kuacc.ku.edu.tr>
+
+	* calvin_supervised_slurm.py:
+	- print out number/id of finished jobs.
+	- save their output as each job finishes.
+	- shorten job name, have both slurm id and job row number.
+	- when cancelled due to time limit it doesn't have the result, should eval outside.
+	-- also necessary because internal eval may not match if instances_per_episode > 1.
+	- also save the step number of the optimum model.
+	- figure out the major differences in ABC, and minor ones in ABCD.
+	-- wnorm different, but expected, changed the calculation
+	-- learning_rate parameter not passed correctly: may explain job_0, Transformer -- just use lr everywhere
+	-- output_interval not the same as instances_per_episode, may explain job_1 LSTM: either add it back, or find optima with output_interval=1
+	- sometimes saves multiple checkpoints? interrupt-restarts?
 
 	* TODO:
 	+ transformer
-	= transformer hparam opt
-	= transformer: figure out the ABC hparams: decrease learning rate?
+	+ transformer hparam opt
+	+ transformer: figure out the ABC hparams: decrease learning rate?
+	= do a sensitivity to layers, heads, hidden etc. for each sota model
+	- transformer: try max pooling and cls
 	- transformer: look at the effect of positional encoding: does it help?
 	- transformer: add nonlinearity at the input? at the output?
-	- transformer: try max pooling and cls
-	- do a sensitivity to layers, heads, hidden etc. for each sota model
-	- calvindataset: integrate 2frame into calvindataset as an option
+	- calvindataset: integrate 2frame into calvindataset as an option: in fact do a general stride argument
 	- calvindataset: create an option that will compute and use differences of n frames as features
 	- calvindataset: create an option that will take a subset of instances for learning curve
 	- Learning curve experiments.
@@ -18,6 +31,8 @@
 	- rnn and transformer feature exp
 	- deprecate loaddata.py
 	- Inputs: try different representations (voxels & convolution?) (3-D positional encoding?) (read Palm-E)
+
+2023-03-17  dyuret  <dyuret@login03.kuacc.ku.edu.tr>
 
 	* Transformer-hparams:
 	4900191	TRMABC	.9278	{'model': 'Transformer', 'batch_size': 32, 'lr': 1e-05, 'max_steps': 300000, 'hidden_size': 512, 'num_layers': 2, 'num_heads': 2, 'dropout': 0.95, 'weight_decay': 0.1}{'instances_per_episode': 1, 'context_length': 64, 'features': range(0, 97)}

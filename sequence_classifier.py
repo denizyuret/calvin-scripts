@@ -17,10 +17,6 @@ class SequenceClassifier(pl.LightningModule):
     def __init__(self, input_size, hidden_size, num_classes, num_layers=1,
                  num_heads=1, dim_feedforward=-1, # transformer specific
                  dropout=0.0, weight_decay=0.0, lr=0.0001, model="MLP"):
-        if hidden_size % num_heads != 0:
-            hidden_size = num_heads * (hidden_size // num_heads + 1)
-        if dim_feedforward <= 0:
-            dim_feedforward = 4 * hidden_size
         super().__init__()
         self.save_hyperparameters()    # need this to load from checkpoints
         self.__dict__.update(locals()) # convert each local variable (incl args) to self.var
@@ -50,6 +46,10 @@ class SequenceClassifier(pl.LightningModule):
             nn.Linear(self.hidden_size, self.num_classes))
     
     def _init_Transformer(self):
+        if self.hidden_size % self.num_heads != 0:
+            self.hidden_size = self.num_heads * (self.hidden_size // self.num_heads + 1)
+        if self.dim_feedforward <= 0:
+            self.dim_feedforward = 4 * self.hidden_size
         encoder_layer = nn.TransformerEncoderLayer(self.hidden_size, self.num_heads, self.dim_feedforward, self.dropout, batch_first=True)
         return nn.Sequential(
             nn.Linear(self.input_size, self.hidden_size),          # [B,T,X] => [B,T,H]; in word_language_model there is also a scaling *math.sqrt(hidden)?
@@ -153,4 +153,4 @@ def train(trn_set, val_set, batch_size=32, max_epochs=-1, max_steps=-1,
     torch.set_float32_matmul_precision('medium')
     trainer = pl.Trainer(accelerator='gpu', devices=1, max_epochs=max_epochs, max_steps=max_steps, callbacks=[checkpoint_callback])
     trainer.fit(classifier, trn_loader, val_loader)
-    return classifier
+    return classifier.hp_metric.compute().item()
