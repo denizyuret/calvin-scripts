@@ -18,7 +18,7 @@ class CalvinDataset(Dataset):
     Turn the last `instances_per_episode` frames of each episode into instances 
     with a subset of `features` from the last `context_length` frames.
     """
-    def __init__(self, path='data/debug-training.npz', features=range(0,97), instances_per_episode=1, context_length=64):
+    def __init__(self, path='data/debug-training.npz', features=range(0,97), instances_per_episode=1, context_length=64, **kwargs):
         # There are three indices for each frame:
         # 1. Frame id given in the episode filename (and frameids in npz), which may be discontinuous and not start from 0.
         # 2. Row in the `data` array. frameids[2]=1 & id2pos[1]=2.

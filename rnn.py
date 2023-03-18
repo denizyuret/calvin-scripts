@@ -1,6 +1,6 @@
 # Usage:
 # import rnn
-# from calvindataset import CalvinDataset
+# from calvin_dataset import CalvinDataset
 # trn = CalvinDataset('data/D-training.npz')
 # val = CalvinDataset('data/D-validation.npz')
 # rnn.train(trn, val)

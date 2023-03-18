@@ -137,7 +137,8 @@ class PositionalEncoding(nn.Module):
 def train(trn_set, val_set, batch_size=32, max_epochs=-1, max_steps=-1,
           hidden_size=512, num_classes=34, num_layers=2,
           num_heads=1, dim_feedforward=0,
-          dropout=0.5, weight_decay=0.1, lr=0.0001, model="MLP"):
+          dropout=0.5, weight_decay=0.1, lr=0.0001, model="MLP",
+          **kwargs):
     global trainer, classifier, trn_loader, val_loader #DBG
     if dim_feedforward == 0:
         dim_feedforward = 4*hidden_size
