@@ -1,17 +1,17 @@
 2023-03-18  dyuret  <dyuret@login03.kuacc.ku.edu.tr>
 
 	* calvin_supervised_slurm.py:
-	- print out number/id of finished jobs.
-	- save their output as each job finishes.
-	- shorten job name, have both slurm id and job row number.
-	- when cancelled due to time limit it doesn't have the result, should eval outside.
-	-- also necessary because internal eval may not match if instances_per_episode > 1.
-	- also save the step number of the optimum model.
-	- figure out the major differences in ABC, and minor ones in ABCD.
-	-- wnorm different, but expected, changed the calculation
-	-- learning_rate parameter not passed correctly: may explain job_0, Transformer -- just use lr everywhere
+	+ print out number/id of finished jobs.
+	+ save their output as each job finishes.
+	+ shorten job name, have both slurm id and job row number.
+	+ when cancelled due to time limit it doesn't have the result, should eval outside.
+	++ also necessary because internal eval may not match if instances_per_episode > 1.
+	+ also save the step number of the optimum model.
+	+ sometimes saves multiple checkpoints? interrupt-restarts? check all.
+	+ figure out the major differences in ABC, and minor ones in ABCD.
+	++ wnorm different, but expected, changed the calculation
+	++ learning_rate parameter not passed correctly: may explain job_0, Transformer
 	-- output_interval not the same as instances_per_episode, may explain job_1 LSTM: either add it back, or find optima with output_interval=1
-	- sometimes saves multiple checkpoints? interrupt-restarts?
 
 	* TODO:
 	+ transformer

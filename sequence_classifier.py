@@ -16,7 +16,7 @@ class SequenceClassifier(pl.LightningModule):
     """
     def __init__(self, input_size, hidden_size, num_classes, num_layers=1,
                  num_heads=1, dim_feedforward=-1, # transformer specific
-                 dropout=0.0, weight_decay=0.0, lr=0.0001, model="MLP"):
+                 dropout=0.0, weight_decay=0.0, learning_rate=0.0001, model="MLP"):
         super().__init__()
         self.save_hyperparameters()    # need this to load from checkpoints
         self.__dict__.update(locals()) # convert each local variable (incl args) to self.var
@@ -59,7 +59,7 @@ class SequenceClassifier(pl.LightningModule):
             nn.Linear(self.hidden_size, self.num_classes))
         
     def configure_optimizers(self):
-        optimizer = AdamW(self.parameters(), lr=self.lr, weight_decay=self.weight_decay)
+        optimizer = AdamW(self.parameters(), lr=self.learning_rate, weight_decay=self.weight_decay)
         return optimizer
 
     def forward(self, x):       # (B,T,X) => (B,C)
@@ -70,12 +70,12 @@ class SequenceClassifier(pl.LightningModule):
         return (softmax(self(x), dim=1), *rest)
 
     def training_step(self, batch, batch_idx):
-        return self.step(batch, self.trn_loss, self.trn_acc)
+        return self._step(batch, self.trn_loss, self.trn_acc)
 
     def validation_step(self, batch, batch_idx):
-        self.step(batch, self.val_loss, self.val_acc)
+        self._step(batch, self.val_loss, self.val_acc)
 
-    def step(self, batch, loss, acc):
+    def _step(self, batch, loss, acc):
         inputs, target, *_ = batch        # inputs=(B,T,X), target=(B)
         preds = self(inputs)              # preds=(B,C)
         loss1 = cross_entropy(preds, target)
@@ -137,7 +137,7 @@ class PositionalEncoding(nn.Module):
 def train(trn_set, val_set, batch_size=32, max_epochs=-1, max_steps=-1,
           hidden_size=512, num_classes=34, num_layers=2,
           num_heads=1, dim_feedforward=0,
-          dropout=0.5, weight_decay=0.1, lr=0.0001, model="MLP",
+          dropout=0.5, weight_decay=0.1, learning_rate=0.0001, model="MLP",
           **kwargs):
     global trainer, classifier, trn_loader, val_loader #DBG
     if dim_feedforward == 0:
@@ -146,7 +146,7 @@ def train(trn_set, val_set, batch_size=32, max_epochs=-1, max_steps=-1,
         input_size = trn_set[0][0].numel() # [T,H] => T*H
     else: 
         input_size = trn_set[0][0].shape[-1] # [T,H] => H
-    classifier = SequenceClassifier(input_size, hidden_size, num_classes, num_layers, num_heads, dim_feedforward, dropout, weight_decay, lr, model)
+    classifier = SequenceClassifier(input_size, hidden_size, num_classes, num_layers, num_heads, dim_feedforward, dropout, weight_decay, learning_rate, model)
     trn_loader = DataLoader(trn_set, batch_size, shuffle=True)
     val_loader = DataLoader(val_set, batch_size, shuffle=False)
     checkpoint_callback = ModelCheckpoint(monitor = "val_acc", mode = 'max')

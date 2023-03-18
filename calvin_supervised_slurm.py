@@ -4,10 +4,41 @@
 # I want to run some hyperparameter sensitivity experiments on a machine learning model. I am planning to read a number of hyperparameter settings from a tsv file. Then I want to run each setting as a SLURM job. I want to wait until all jobs finish. Then I want to read the results of each run and output them as a tsv file. Can you write some python code for this?
 
 import os
+import re
 import sys
 import csv
 import time
 import subprocess
+
+
+def job_status(job_id):
+    status_cmd = f"squeue -j {job_id} -o %t"
+    status_run = subprocess.run(status_cmd, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    return status_run.stdout.splitlines()[-1].strip()
+
+
+def set_val_acc(setting):
+    setting['val_acc'] = -1
+    setting['step'] = -1
+    ckpt_dir = f"lightning_logs/version_{setting['job_id']}/checkpoints"
+    if not os.path.isdir(ckpt_dir):
+        return
+    for f in os.listdir(ckpt_dir):
+        m = re.match(r"epoch=(\d+)-step=(\d+)\.ckpt", f)
+        if m is None:
+            continue
+        eval_cmd = f"eval.py {ckpt_dir}/{f} -c {setting['context_length']} -f '{setting['features']}'"
+        eval_run = subprocess.run(eval_cmd, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        eval_last_line = eval_run.stdout.splitlines()[-1]
+        try:
+            val_acc = float(eval_last_line)
+        except ValueError:
+            val_acc = -1
+        if val_acc > setting['val_acc']:
+            setting['val_acc'] = val_acc
+            setting['step'] = m.group(2)
+            
+
 
 # Read hyperparameter settings from a TSV file
 hyperparameter_settings_file = sys.argv[1]
@@ -24,8 +55,8 @@ slurm_script = "calvin_supervised_training.py"
 
 for i, setting in enumerate(hyperparameter_settings):
     sbatch_options = f"""#!/bin/bash
-#SBATCH --job-name=ml_job_{i}
-#SBATCH --output=ml_job_output_{i}.txt
+#SBATCH --job-name={i:03}
+#SBATCH --output={i:03}_%j.out
 #SBATCH --partition=short
 #SBATCH --gres=gpu:1
 #SBATCH --mem=16G
@@ -33,8 +64,7 @@ for i, setting in enumerate(hyperparameter_settings):
 #SBATCH --ntasks=1
 #SBATCH --time=02:00:00
 """
-
-    sbatch_script = f"job_{i}.sbatch"
+    sbatch_script = f"{i:03}.sbatch"
     with open(sbatch_script, "w") as f:
         f.write(sbatch_options)
         f.write(f"python {slurm_script} ")
@@ -48,44 +78,27 @@ for i, setting in enumerate(hyperparameter_settings):
     job_id = int(submit_result.stdout.strip().split()[-1])
     job_ids.append(job_id)
 
-    print(f"Submitted job {job_id} with settings: {setting}")
-
-# Wait for all jobs to complete
-print("Waiting for all jobs to complete...")
-job_ids_left = job_ids.copy()
-while job_ids_left:
-    for job_id in job_ids_left:
-        status_cmd = f"squeue -j {job_id} -o %t"
-        status_result = subprocess.run(status_cmd, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-        for line in status_result.stdout.splitlines():
-            status = line.strip()
-        if status not in ("R", "PD", "CG", "S"):
-            job_ids_left.remove(job_id)
-    time.sleep(10)
-
-print("All jobs completed.")
+    print(f"Submitted job {job_id} with settings: {setting}", file=sys.stderr)
 
 # Collect and save results as a TSV file
-results_file = "results.tsv"
+results_file = "calvin_supervised_slurm.tsv"
+job_ids_left = job_ids.copy()
 
 with open(results_file, "w", newline="") as f:
     writer = csv.writer(f, delimiter="\t")
     writer.writerow(list(hyperparameter_settings[0].keys()))
+    print(f"Waiting for {len(job_ids_left)} jobs to finish...", file=sys.stderr)
+    while job_ids_left:
+        for job_id in job_ids_left:
+            status = job_status(job_id)
+            if status not in ("R", "PD", "CG", "S"):
+                setting_id = job_ids.index(job_id)
+                setting = hyperparameter_settings[setting_id]
+                setting['job_id'] = job_id
+                set_val_acc(setting)
+                writer.writerow(list(setting.values()))
+                job_ids_left.remove(job_id)
+                print(f"{setting_id:03} finished: job_id={job_id} status={status} val_acc={setting['val_acc']} step={setting['step']}; {len(job_ids_left)} left", file=sys.stderr)
+        time.sleep(10)
 
-    for i, setting in enumerate(hyperparameter_settings):
-        output_file = f"ml_job_output_{i}.txt"
-        result = "N/A"
-
-        if os.path.exists(output_file):
-            with open(output_file, "r") as f_out:
-                for line in f_out:
-                    result = line.strip()
-
-        try:
-            setting['val_acc'] = float(result)
-        except ValueError:
-            setting['val_acc'] = -1
-        setting['job_id'] = job_ids[i]
-        writer.writerow(list(setting.values()))
-
-print(f"Results saved to {results_file}.")
+print(f"Saved results to {results_file}", file=sys.stderr)
