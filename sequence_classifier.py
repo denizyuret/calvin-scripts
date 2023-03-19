@@ -20,7 +20,8 @@ class SequenceClassifier(pl.LightningModule):
     def __init__(self, input_size, hidden_size, num_classes, num_layers=1,
                  num_heads=1, dim_feedforward=-1, # transformer specific
                  dropout=0, weight_decay=0, learning_rate=0.0001, 
-                 model="MLP", pool="mean"):
+                 model="MLP", pool="mean", # pool is used by lstm and transformer
+                 data="debug", instances_per_episode=1, context_length=64, features=range(0,97)): # these are not used, just here for logging
         super().__init__()
         self.save_hyperparameters()    # need this to load from checkpoints
         self.__dict__.update(locals()) # convert each local variable (incl args) to self.var
@@ -158,7 +159,9 @@ def train(trn_set, val_set, batch_size=32, max_epochs=-1, max_steps=-1,
           hidden_size=512, num_classes=34, num_layers=2,
           num_heads=1, dim_feedforward=0,
           dropout=0.5, weight_decay=0.1, learning_rate=0.0001, 
-          model="MLP", pool="mean", **kwargs):
+          model="MLP", pool="mean", 
+          data="debug", instances_per_episode=1, context_length=64, features=range(0,97), # these are not used, just here for logging
+          **kwargs):
     global trainer, classifier, trn_loader, val_loader #DBG
     if kwargs:
         warn(f"Warning: train: Unrecognized kwargs: {kwargs}")
@@ -171,7 +174,8 @@ def train(trn_set, val_set, batch_size=32, max_epochs=-1, max_steps=-1,
     classifier = SequenceClassifier(input_size, hidden_size, num_classes, num_layers=num_layers,
                                     num_heads=num_heads, dim_feedforward=dim_feedforward,
                                     dropout=dropout, weight_decay=weight_decay, learning_rate=learning_rate, 
-                                    model=model, pool=pool)
+                                    model=model, pool=pool, 
+                                    data=data, instances_per_episode=instances_per_episode, context_length=context_length, features=features)
     trn_loader = DataLoader(trn_set, batch_size, shuffle=True)
     val_loader = DataLoader(val_set, batch_size, shuffle=False)
     checkpoint_callback = ModelCheckpoint(monitor = "val_acc", mode = 'max')
