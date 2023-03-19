@@ -7,6 +7,7 @@ from torch.optim import AdamW
 from torch.utils.data import DataLoader
 from pytorch_lightning.callbacks import ModelCheckpoint
 from torch.nn.functional import cross_entropy, softmax
+from warnings import warn
 
 
 class SequenceClassifier(pl.LightningModule):
@@ -140,6 +141,8 @@ def train(trn_set, val_set, batch_size=32, max_epochs=-1, max_steps=-1,
           dropout=0.5, weight_decay=0.1, learning_rate=0.0001, model="MLP",
           **kwargs):
     global trainer, classifier, trn_loader, val_loader #DBG
+    if kwargs:
+        warn(f"Warning: train: Unrecognized kwargs: {kwargs}")
     if dim_feedforward == 0:
         dim_feedforward = 4*hidden_size
     if model == "MLP":

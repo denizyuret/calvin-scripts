@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 from torch.utils.data import Dataset
-
+from warnings import warn
 
 # The dataset can be carved up in the following ways (only some of which are implemented):
 # 1. Features: we can take a subset of features, or automatically create new (difference, sum) features.
@@ -19,10 +19,8 @@ class CalvinDataset(Dataset):
     with a subset of `features` from the last `context_length` frames.
     """
     def __init__(self, path='data/debug-training.npz', features=range(0,97), instances_per_episode=1, context_length=64, **kwargs):
-        # There are three indices for each frame:
-        # 1. Frame id given in the episode filename (and frameids in npz), which may be discontinuous and not start from 0.
-        # 2. Row in the `data` array. frameids[2]=1 & id2pos[1]=2.
-        # 3. Position in the final dataset, which contains only the annotated subset of data. data_index[3]=2
+        if kwargs:
+            warn(f"Warning: CalvinDataset: unrecognized kwargs: {kwargs}")
         npzfile = np.load(path, allow_pickle=True)
         data = npzfile['data']
         lang = npzfile['lang']
@@ -32,6 +30,11 @@ class CalvinDataset(Dataset):
         episodes = npzfile['episodes']
         normalized_fields = [ fieldnames.index(f) for f in ('tcpg', 'button', 'switch') ]
                 
+        # There are three indices for each frame:
+        # 1. Frame id given in the episode filename (and frameids in npz), which may be discontinuous and not start from 0.
+        # 2. Row in the `data` array. frameids[2]=1 & id2pos[1]=2.
+        # 3. Position in the final dataset, which contains only the annotated subset of data. data_index[3]=2
+
         # build reverse maps
         id2pos = np.full(1+max(frameids), -1)
         for (pos, id) in enumerate(frameids):

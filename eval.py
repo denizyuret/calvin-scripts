@@ -12,6 +12,9 @@ import loaddata as ld
 import mlp
 import rnn
 import sequence_classifier as sc
+import logging
+from logging import info
+logging.basicConfig(level=logging.INFO)
 
 parser = ArgumentParser(description="Evaluate a model on a dataset")
 parser.add_argument("model", type=str, help="Model checkpoint")
@@ -21,30 +24,30 @@ parser.add_argument("-c", "--context_length",  type=int, default=64)
 parser.add_argument("-f", "--features",  type=str, default="range(0,97)")
 args = parser.parse_args()
 
-print(f"Loading model from {args.model}...", file=sys.stderr)
+info(f"Loading model from {args.model}...")
 try:
     model = mlp.LitMLP.load_from_checkpoint(args.model)
-    print("Loaded LitMLP.", file=sys.stderr)
+    info("Loaded LitMLP.")
 except:
     try:
         model = rnn.LitRNN.load_from_checkpoint(args.model)
-        print("Loaded LitRNN.", file=sys.stderr)
+        info("Loaded LitRNN.")
     except:
         try:
             model = sc.SequenceClassifier.load_from_checkpoint(args.model)
-            print(f"Loaded {model.model} SequenceClassifier.", file=sys.stderr)
+            info(f"Loaded {model.model} SequenceClassifier.")
         except:
             sys.exit('Cannot load model')
 
-print(f"Loading data from {args.data}...", file=sys.stderr)
+info(f"Loading data from {args.data}...")
 data = CalvinDataset(args.data, eval(args.features), args.instances_per_episode, args.context_length)
 
-print(f"Running validation...", file=sys.stderr)
+info(f"Running validation...")
 tr = pl.Trainer(accelerator='gpu', devices=1, max_epochs=1, logger=False)
 v = tr.validate(model, DataLoader(data, batch_size=1024))
 print(v)
 
-print(f"Printing confusion matrix...", file=sys.stderr)
+info(f"Printing confusion matrix...")
 p = tr.predict(model, DataLoader(data, batch_size=1024))
 preds = torch.cat([x[0] for x in p])
 target = torch.cat([x[1] for x in p])
@@ -67,7 +70,7 @@ for i in range(num_classes):
 
 print(multiclass_accuracy(preds, target, num_classes, average='micro').item())
 
-print(f"Saving data and predictions in eval.out...", file=sys.stderr)
+info(f"Saving data and predictions in eval.out...")
 (x, *rest) = next(iter(DataLoader(data, batch_size=len(data))))
 x = x[:,-1,:]
 cpreds = preds.argmax(axis=1)

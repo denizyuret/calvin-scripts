@@ -8,8 +8,11 @@ import re
 import sys
 import csv
 import time
+import shutil
 import subprocess
-
+import logging
+from logging import info
+logging.basicConfig(level=logging.INFO)
 
 def job_status(job_id):
     status_cmd = f"squeue -j {job_id} -o %t"
@@ -77,17 +80,19 @@ for i, setting in enumerate(hyperparameter_settings):
     # Get the job ID from the sbatch output
     job_id = int(submit_result.stdout.strip().split()[-1])
     job_ids.append(job_id)
+    # Make batch file unique to preserve
+    shutil.copy(sbatch_script, f"{i:03}_{job_id}.sbatch")
 
-    print(f"Submitted job {job_id} with settings: {setting}", file=sys.stderr)
+    info(f"Submitted job {job_id} with settings: {setting}")
 
 # Collect and save results as a TSV file
-results_file = "calvin_supervised_slurm.tsv"
+results_file = f"{job_ids[0]}-{job_ids[-1]}.tsv"
 job_ids_left = job_ids.copy()
 
 with open(results_file, "w", newline="") as f:
     writer = csv.writer(f, delimiter="\t")
     writer.writerow(list(hyperparameter_settings[0].keys()))
-    print(f"Waiting for {len(job_ids_left)} jobs to finish...", file=sys.stderr)
+    info(f"Waiting for {len(job_ids_left)} jobs to finish...")
     while job_ids_left:
         for job_id in job_ids_left:
             status = job_status(job_id)
@@ -98,7 +103,7 @@ with open(results_file, "w", newline="") as f:
                 set_val_acc(setting)
                 writer.writerow(list(setting.values()))
                 job_ids_left.remove(job_id)
-                print(f"{setting_id:03} finished: job_id={job_id} status={status} val_acc={setting['val_acc']} step={setting['step']}; {len(job_ids_left)} left", file=sys.stderr)
+                info(f"{setting_id:03} finished: job_id={job_id} status={status} val_acc={setting['val_acc']} step={setting['step']}; {len(job_ids_left)} left")
         time.sleep(10)
 
-print(f"Saved results to {results_file}", file=sys.stderr)
+info(f"Saved results to {results_file}")

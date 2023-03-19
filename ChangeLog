@@ -1,3 +1,7 @@
+2023-03-19  dyuret  <dyuret@login03.kuacc.ku.edu.tr>
+
+	* calvin_supervised_slurm.py: learning_rate was misspelled again!
+
 2023-03-18  dyuret  <dyuret@login03.kuacc.ku.edu.tr>
 
 	* calvin_supervised_slurm.py:
