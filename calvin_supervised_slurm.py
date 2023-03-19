@@ -102,6 +102,7 @@ with open(results_file, "w", newline="") as f:
                 setting['job_id'] = job_id
                 set_val_acc(setting)
                 writer.writerow(list(setting.values()))
+                f.flush()
                 job_ids_left.remove(job_id)
                 info(f"{setting_id:03} finished: job_id={job_id} status={status} val_acc={setting['val_acc']} step={setting['step']}; {len(job_ids_left)} left")
         time.sleep(10)

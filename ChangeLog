@@ -1,6 +1,36 @@
 2023-03-19  dyuret  <dyuret@login03.kuacc.ku.edu.tr>
 
-	* calvin_supervised_slurm.py: learning_rate was misspelled again!
+	* TODO
+	- transformer: try max pooling and cls
+	- lstm: also can try max and mean pooling instead of the last step (instead of output_interval).
+	-- output_interval not the same as instances_per_episode, may explain job_1 LSTM: either add it back, or find optima with output_interval=
+	- transformer: look at the effect of positional encoding: does it help?
+	- transformer: add nonlinearity at the input? at the output?
+	- calvindataset: integrate 2frame into calvindataset as an option: in fact do a general stride argument
+	- calvindataset: create an option that will compute and use differences of n frames as features
+	- calvindataset: create an option that will take a subset of instances for learning curve
+	- Learning curve experiments.
+	- SSL experiments
+	- Auto-label experiments
+	- finish mlp feature exp with abcd
+	- rnn and transformer feature exp
+	- deprecate loaddata.py
+	- Inputs: try different representations (voxels & convolution?) (3-D positional encoding?) (read Palm-E)
+
+	* Leaderboard: 
+	job_id	val_acc	step	data	model	batch	lr	maxstp	hidden	layers	dropout	wdecay	nheads	ipe	context	features
+	4903594	0.9740	258405	D	TRM	32	0.0001	300000	128	1	0	1	4	1	64	range(0,97)
+	4906858	0.9664	284648	D	LSTM	32	0.0001	300000	256	2	0.5	0.25	0	1	64	range(0,97)
+	4903683	0.9570	278208	D	MLP	32	0.0001	300000	512	2	0.75	0.15	0	1	64	range(0,97)
+	4906862	0.9604	276430	ABCD	TRM	32	0.0001	300000	128	3	0.75	0.5	1	1	32	range(0,97)
+	4906851	0.9565	292842	ABCD	MLP	32	0.0001	300000	512	2	0.5	0.25	0	8	32	range(0,97)
+	4903627	0.9560	269874	ABCD	LSTM	32	0.0001	300000	512	4	0.25	0.1	0	8	64	range(0,97)
+	4904912	0.9380	283413	ABC	TRM	32	0.00001	300000	512	2	0.95	0.1	1	1	64	range(0,97)
+	4906875	0.9367	294855	ABC	MLP	32	0.00001	300000	512	2	0.5	1	0	16	64	range(0,97)
+***	4903612	0.8510	142960	ABC	LSTM	32	0.0001	300000	256	3	0.05	1.5	0	32	64	range(0,97)
+
+	- some results have high (>1%) stdev
+	- new lstm abc still not converging without output_interval (with output_interval=32 .9011) try mean/max pooling)?
 
 2023-03-18  dyuret  <dyuret@login03.kuacc.ku.edu.tr>
 
@@ -15,26 +45,12 @@
 	+ figure out the major differences in ABC, and minor ones in ABCD.
 	++ wnorm different, but expected, changed the calculation
 	++ learning_rate parameter not passed correctly: may explain job_0, Transformer
-	-- output_interval not the same as instances_per_episode, may explain job_1 LSTM: either add it back, or find optima with output_interval=1
 
 	* TODO:
 	+ transformer
 	+ transformer hparam opt
 	+ transformer: figure out the ABC hparams: decrease learning rate?
-	= do a sensitivity to layers, heads, hidden etc. for each sota model
-	- transformer: try max pooling and cls
-	- transformer: look at the effect of positional encoding: does it help?
-	- transformer: add nonlinearity at the input? at the output?
-	- calvindataset: integrate 2frame into calvindataset as an option: in fact do a general stride argument
-	- calvindataset: create an option that will compute and use differences of n frames as features
-	- calvindataset: create an option that will take a subset of instances for learning curve
-	- Learning curve experiments.
-	- SSL experiments
-	- Auto-label experiments
-	- finish mlp feature exp with abcd
-	- rnn and transformer feature exp
-	- deprecate loaddata.py
-	- Inputs: try different representations (voxels & convolution?) (3-D positional encoding?) (read Palm-E)
+	+ do a sensitivity to layers, heads, hidden etc. for each sota model
 
 2023-03-17  dyuret  <dyuret@login03.kuacc.ku.edu.tr>
 
