@@ -20,6 +20,7 @@ parser.add_argument("-w", "--weight_decay", default=0.1, type=float, help="Weigh
 parser.add_argument("-i", "--instances_per_episode", default=1, type=int, help="Instances per episode")
 parser.add_argument("-c", "--context_length", default=64, type=int, help="Context length")
 parser.add_argument("-f", "--features", default="range(0,97)", type=str, help="Features")
+parser.add_argument("-a", "--pool", default="mean", type=str, help="AdaptivePooling operation")
 
 args, unknown = parser.parse_known_args()
 print(args)

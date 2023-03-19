@@ -6,6 +6,7 @@
 	-- output_interval not the same as instances_per_episode, may explain job_1 LSTM: either add it back, or find optima with output_interval=
 	- transformer: look at the effect of positional encoding: does it help?
 	- transformer: add nonlinearity at the input? at the output?
+	- transformer: does the *sqrt(ndim) scaling at the input help?
 	- calvindataset: integrate 2frame into calvindataset as an option: in fact do a general stride argument
 	- calvindataset: create an option that will compute and use differences of n frames as features
 	- calvindataset: create an option that will take a subset of instances for learning curve

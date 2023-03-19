@@ -13,11 +13,14 @@ from warnings import warn
 class SequenceClassifier(pl.LightningModule):
     """
     I/O Dimensions: (B,T,X) => (B,C), i.e. we use batch_first=True.
-    all models use: input_size, hidden_size, num_classes, num_layers
+    all models use: input_size, hidden_size, num_classes, num_layers.
+    num_heads and dim_feedforward are specific to Transformer, ignored by MLP/LSTM.
+    pool is specific to Transformer and LSTM, ignored by MLP.
     """
     def __init__(self, input_size, hidden_size, num_classes, num_layers=1,
                  num_heads=1, dim_feedforward=-1, # transformer specific
-                 dropout=0.0, weight_decay=0.0, learning_rate=0.0001, model="MLP"):
+                 dropout=0, weight_decay=0, learning_rate=0.0001, 
+                 model="MLP", pool="mean"):
         super().__init__()
         self.save_hyperparameters()    # need this to load from checkpoints
         self.__dict__.update(locals()) # convert each local variable (incl args) to self.var
@@ -42,7 +45,8 @@ class SequenceClassifier(pl.LightningModule):
     def _init_LSTM(self):
         return nn.Sequential(
             nn.LSTM(self.input_size, self.hidden_size, self.num_layers, batch_first=True, dropout=self.dropout), # bias=True by default
-            RNNLastOutput(),    # [B,T,H]=>[B,H]
+            RNNOutput(),                       # LSTM returns (output[B,T,H],(h_n[L,B,H],c_n[L,B,H])) => RNNOutput => output[B,T,H]
+            AdaptivePool(dim=1, op=self.pool), # [B,T,H]=>[B,H]
             nn.Dropout(p=self.dropout),
             nn.Linear(self.hidden_size, self.num_classes))
     
@@ -54,9 +58,9 @@ class SequenceClassifier(pl.LightningModule):
         encoder_layer = nn.TransformerEncoderLayer(self.hidden_size, self.num_heads, self.dim_feedforward, self.dropout, batch_first=True)
         return nn.Sequential(
             nn.Linear(self.input_size, self.hidden_size),          # [B,T,X] => [B,T,H]; in word_language_model there is also a scaling *math.sqrt(hidden)?
-            PositionalEncoding(self.hidden_size),                  # [B,T,H] => [B,T,H]; do not apply dropout to input
+            PositionalEncoding(self.hidden_size, dropout=self.dropout), # [B,T,H] => [B,T,H]
             nn.TransformerEncoder(encoder_layer, self.num_layers), # [B,T,H] => [B,T,H]
-            TransformerAvgPool(),                                  # [B,T,H] => [B,H]
+            AdaptivePool(dim=1, op=self.pool),                     # [B,T,H] => [B,H]
             nn.Linear(self.hidden_size, self.num_classes))
         
     def configure_optimizers(self):
@@ -97,21 +101,36 @@ class SequenceClassifier(pl.LightningModule):
         self.log("hp_metric", self.hp_metric.compute())
 
 
-class TransformerAvgPool(nn.Module):
+class AdaptivePool(nn.Module):
+    """Reduce one dim using mean, min, max, or last."""
+    def __init__(self, dim=1, op="mean"):
+        super().__init__()
+        self.dim = dim
+        self.op = op
+
     def forward(self,x):        # [B,T,H] => [B,H]
-        return torch.mean(x, dim=1)
+        if self.op == "last":
+            # return x[:,-1,:] where -1 is placed at the dim'th dimension
+            index = (slice(None),) * self.dim + (-1,) + (slice(None),) * (x.ndim - self.dim - 1)
+            return x[index]
+        elif self.op == "mean":
+            return x.mean(dim=self.dim)
+        elif self.op == "max":
+            return x.max(dim=self.dim)[0]
+        else:
+            sys.exit(f"Unrecognized pooling op {op}")
 
 
 # From: https://stackoverflow.com/questions/44130851/simple-lstm-in-pytorch-with-sequential-module
-class RNNLastOutput(nn.Module):
+class RNNOutput(nn.Module):
     def forward(self,x):
         tensor, _ = x           # LSTM output x = output[B,T,H], (h_n[L,B,H], c_n[L,B,H]) where B:batch,T:seqlen,H:hidden,L:layers,batch_first=True
-        return tensor[:,-1,:]   # Should be [B,H]
+        return tensor
 
 
 # From: pytorch/examples/word_language_model/model.py
 class PositionalEncoding(nn.Module):
-    def __init__(self, d_model, dropout=0.1, max_len=64, batch_first=True):
+    def __init__(self, d_model, dropout=0, max_len=64, batch_first=True):
         super(PositionalEncoding, self).__init__()
         self.dropout = nn.Dropout(p=dropout)
         self.batch_first = batch_first
@@ -138,8 +157,8 @@ class PositionalEncoding(nn.Module):
 def train(trn_set, val_set, batch_size=32, max_epochs=-1, max_steps=-1,
           hidden_size=512, num_classes=34, num_layers=2,
           num_heads=1, dim_feedforward=0,
-          dropout=0.5, weight_decay=0.1, learning_rate=0.0001, model="MLP",
-          **kwargs):
+          dropout=0.5, weight_decay=0.1, learning_rate=0.0001, 
+          model="MLP", pool="mean", **kwargs):
     global trainer, classifier, trn_loader, val_loader #DBG
     if kwargs:
         warn(f"Warning: train: Unrecognized kwargs: {kwargs}")
@@ -149,7 +168,10 @@ def train(trn_set, val_set, batch_size=32, max_epochs=-1, max_steps=-1,
         input_size = trn_set[0][0].numel() # [T,H] => T*H
     else: 
         input_size = trn_set[0][0].shape[-1] # [T,H] => H
-    classifier = SequenceClassifier(input_size, hidden_size, num_classes, num_layers, num_heads, dim_feedforward, dropout, weight_decay, learning_rate, model)
+    classifier = SequenceClassifier(input_size, hidden_size, num_classes, num_layers=num_layers,
+                                    num_heads=num_heads, dim_feedforward=dim_feedforward,
+                                    dropout=dropout, weight_decay=weight_decay, learning_rate=learning_rate, 
+                                    model=model, pool=pool)
     trn_loader = DataLoader(trn_set, batch_size, shuffle=True)
     val_loader = DataLoader(val_set, batch_size, shuffle=False)
     checkpoint_callback = ModelCheckpoint(monitor = "val_acc", mode = 'max')
