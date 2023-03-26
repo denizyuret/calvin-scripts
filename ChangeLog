@@ -1,3 +1,17 @@
+2023-03-26  dyuret  <dyuret@login03.kuacc.ku.edu.tr>
+
+	* calvin_dataset.py: Added PlayDataset for self-supervised experiments.
+
+2023-03-20  dyuret  <dyuret@login03.kuacc.ku.edu.tr>
+
+	* pooling-experiments: Tried max/mean/last pooling for Transformer and LSTM:
+	- Transformer-D: max > mean+1% > last+2%, c32 > c64 for max (.6%), c64 > c32 (.3%) for others
+	- Transformer-ABCD: mean > last = max (1%), c32 > c64 for max (.5%), c64 > c32 (.6%) for others.
+	- Transformer-ABC: did not converge.
+	- LSTM-D: max > last+.2% > mean+2.5%. max64>max32 (1.5%), last64>last32 (.1%), mean32>mean64 (4%)
+	- LSTM-ABCD: max > last+.1% > mean+.5%. max64>max32 (.5%), last32>last64 (1.5%), mean64>mean32 (.5%)
+	- LSTM-ABC: did not converge. mean64 least bad (.8645).
+
 2023-03-19  dyuret  <dyuret@login03.kuacc.ku.edu.tr>
 
 	* TODO
