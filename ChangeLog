@@ -1,8 +1,35 @@
 2023-03-29  dyuret  <dyuret@login03.kuacc.ku.edu.tr>
 
-	* gpt.py:
-	tcp+0,act+0=>tcp+1: min rmsd=0.0422, converges to < 0.05 in 500 steps. {'batch_size': 32, 'max_steps': 100000, 'hidden_size': 512, 'num_layers': 2, 'num_heads': 2, 'dropout': 0, 'weight_decay': 0, 'learning_rate': 0.0001, 'data': 'D'}{'in_features': [('tcp', 0), ('act', 0)], 'out_features': [('tcp', 1)], 'window': 1024}
-	tcp+0,rel+0=>tcp+1: min rmsd=0.0422, converges to
+	* warning:
+	/userfiles/dyuret/.julia/conda/3/x86_64/lib/python3.10/site-packages/torch/nn/modules/transformer.py:544: UserWarning: Converting mask without torch.bool dtype to bool; this will negatively affect performance. Prefer to use a boolean mask directly. (Triggered internally at /opt/conda/conda-bld/pytorch_1678411187366/work/aten/src/ATen/native/transformers/attention.cpp:150.)
+
+	* gpt.py: Experiments on the D dataset.
+
+	### state,action=>next-state ###
+	tcp+0,act+0=>tcp+1: 4921796: min rmsd=0.0422, converges to < 0.05 in 500 steps. {'batch_size': 32, 'max_steps': 100000, 'hidden_size': 512, 'num_layers': 2, 'num_heads': 2, 'dropout': 0, 'weight_decay': 0, 'learning_rate': 0.0001, 'data': 'D'}{'in_features': [('tcp', 0), ('act', 0)], 'out_features': [('tcp', 1)], 'window': 1024}
+	  here min-rmsd for xyz = 0.0009, for abc=0.06
+	tcp+0,rel+0=>tcp+1: 4921799: min rmsd=0.4470 with simple scaling, converges to 0.35 in 2000 steps. {'batch_size': 32, 'max_steps': 100000, 'hidden_size': 512, 'num_layers': 2, 'num_heads': 2, 'dropout': 0, 'weight_decay': 0, 'learning_rate': 0.0001, 'data': 'D'}{'in_features': [('tcp', 0), ('rel', 0)], 'out_features': [('tcp', 1)], 'window': 1024}
+	  here min-rmsd for xyz = 0.0009, for abc=0.6321: we are definitely suffering from angle conversion, **try sin/cos?** try xyz only?
+	tcp3+0,act3+0=>tcp3+1: 4921800: min rmsd=0.0009, converges to 0.02286 in 300 steps, 0.00375 in 7000. {'batch_size': 32, 'max_steps': 100000, 'hidden_size': 512, 'num_layers': 2, 'num_heads': 2, 'dropout': 0, 'weight_decay': 0, 'learning_rate': 0.0001, 'data': 'D'}{'in_features': [('tcp3', 0), ('act3', 0)], 'out_features': [('tcp3', 1)], 'window': 1024}
+	  here converged to larger loss than min-rmsd: try hparams?
+	tcp3+0,rel3+0=>tcp3+1: 4921801: min rmsd=0.0009, converges to 0.006 in 5000 steps.  {'batch_size': 32, 'max_steps': 100000, 'hidden_size': 512, 'num_layers': 2, 'num_heads': 2, 'dropout': 0, 'weight_decay': 0, 'learning_rate': 0.0001, 'data': 'D'}{'in_features': [('tcp3', 0), ('rel3', 0)], 'out_features': [('tcp3', 1)], 'window': 1024}
+	  looks good.
+	arm+0,act3+0=>arm+1: 4921829: converges to 0.014 in 1800, <0.01 in 4500, 0.00681 in 10K. {'batch_size': 32, 'max_steps': 10000, 'hidden_size': 512, 'num_layers': 2, 'num_heads': 2, 'dropout': 0, 'weight_decay': 0, 'learning_rate': 0.0001, 'data': 'D'}{'in_features': [('arm', 0), ('act3', 0)], 'out_features': [('arm', 1)], 'window': 1024}
+	  looks good.
+	arm+0,rel3+0=>arm+1: 4921830: converges to 0.013 in 1100, <0.01 in 3700, 0.00621 in 10K. {'batch_size': 32, 'max_steps': 10000, 'hidden_size': 512, 'num_layers': 2, 'num_heads': 2, 'dropout': 0, 'weight_decay': 0, 'learning_rate': 0.0001, 'data': 'D'}{'in_features': [('arm', 0), ('rel3', 0)], 'out_features': [('arm', 1)], 'window': 1024}
+	  there is some unstability during training around 800 steps, try gradient clipping?
+	arm+0,rel3+0=>arm+1: 4921835: {'batch_size': 32, 'max_steps': 10000, 'hidden_size': 512, 'num_layers': 2, 'num_heads': 2, 'dropout': 0, 'weight_decay': 0, 'learning_rate': 0.0001, 'gradient_clip_val': 0.5, 'data': 'D'}{'in_features': [('arm', 0), ('rel3', 0)], 'out_features': [('arm', 1)], 'window': 1024}
+	  same experiment as above with gradient_clip_val=0.5. does not seem to help much, training curve more noisy, maybe 0.5 not good? lower learning_rate?
+	arm+0,rel3+0=>arm+1: 4921836:
+	  same experiment as above with no compilation. same speed.
+
+	### state,next-state => action ###
+	tcp3+0,tcp3+1=>act3+0: 4921847: {'in_features': [('tcp3', 0), ('tcp3', 1)], 'out_features': [('act3', 0)], 'window': 1024}{'batch_size': 32, 'max_steps': 10000, 'hidden_size': 512, 'num_layers': 2, 'num_heads': 2, 'dropout': 0, 'weight_decay': 0, 'learning_rate': 0.0001, 'gradient_clip_val': 0, 'data': 'D'}
+	tcp3+0,tcp3+1=>rel3+0: 4921848: {'in_features': [('tcp3', 0), ('tcp3', 1)], 'out_features': [('rel3', 0)], 'window': 1024}{'batch_size': 32, 'max_steps': 10000, 'hidden_size': 512, 'num_layers': 2, 'num_heads': 2, 'dropout': 0, 'weight_decay': 0, 'learning_rate': 0.0001, 'gradient_clip_val': 0, 'data': 'D'}
+	arm+0,arm+1=>rel3+0: 4921850: {'in_features': [('arm', 0), ('arm', 1)], 'out_features': [('rel3', 0)], 'window': 1024}{'batch_size': 32, 'max_steps': 10000, 'hidden_size': 512, 'num_layers': 2, 'num_heads': 2, 'dropout': 0, 'weight_decay': 0, 'learning_rate': 0.0001, 'gradient_clip_val': 0, 'data': 'D'}
+	tcp3+0,tcp3+16=>rel3+0: 4921851: {'in_features': [('tcp3', 0), ('tcp3', 16)], 'out_features': [('rel3', 0)], 'window': 1024}{'batch_size': 32, 'max_steps': 10000, 'hidden_size': 512, 'num_layers': 2, 'num_heads': 2, 'dropout': 0, 'weight_decay': 0, 'learning_rate': 0.0001, 'gradient_clip_val': 0, 'data': 'D'}
+	arm+0,arm+16=>rel3+0: 4921852: trn=0.04 val=0.05. 10K-steps. still improving. {'in_features': [('arm', 0), ('arm', 16)], 'out_features': [('rel3', 0)], 'window': 1024}{'batch_size': 32, 'max_steps': 10000, 'hidden_size': 512, 'num_layers': 2, 'num_heads': 2, 'dropout': 0, 'weight_decay': 0, 'learning_rate': 0.0001, 'gradient_clip_val': 0, 'data': 'D'}
+	  did not converge yet, try longer run.
 
 2023-03-26  dyuret  <dyuret@login03.kuacc.ku.edu.tr>
 
