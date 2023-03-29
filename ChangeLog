@@ -5,7 +5,7 @@
 
 	* gpt.py: Experiments on the D dataset.
 
-	### state,action=>next-state ###
+	### robot: state,action=>next-state ###
 	tcp+0,act+0=>tcp+1: 4921796: min rmsd=0.0422, converges to < 0.05 in 500 steps. {'batch_size': 32, 'max_steps': 100000, 'hidden_size': 512, 'num_layers': 2, 'num_heads': 2, 'dropout': 0, 'weight_decay': 0, 'learning_rate': 0.0001, 'data': 'D'}{'in_features': [('tcp', 0), ('act', 0)], 'out_features': [('tcp', 1)], 'window': 1024}
 	  here min-rmsd for xyz = 0.0009, for abc=0.06
 	tcp+0,rel+0=>tcp+1: 4921799: min rmsd=0.4470 with simple scaling, converges to 0.35 in 2000 steps. {'batch_size': 32, 'max_steps': 100000, 'hidden_size': 512, 'num_layers': 2, 'num_heads': 2, 'dropout': 0, 'weight_decay': 0, 'learning_rate': 0.0001, 'data': 'D'}{'in_features': [('tcp', 0), ('rel', 0)], 'out_features': [('tcp', 1)], 'window': 1024}
@@ -23,13 +23,34 @@
 	arm+0,rel3+0=>arm+1: 4921836:
 	  same experiment as above with no compilation. same speed.
 
-	### state,next-state => action ###
-	tcp3+0,tcp3+1=>act3+0: 4921847: {'in_features': [('tcp3', 0), ('tcp3', 1)], 'out_features': [('act3', 0)], 'window': 1024}{'batch_size': 32, 'max_steps': 10000, 'hidden_size': 512, 'num_layers': 2, 'num_heads': 2, 'dropout': 0, 'weight_decay': 0, 'learning_rate': 0.0001, 'gradient_clip_val': 0, 'data': 'D'}
-	tcp3+0,tcp3+1=>rel3+0: 4921848: {'in_features': [('tcp3', 0), ('tcp3', 1)], 'out_features': [('rel3', 0)], 'window': 1024}{'batch_size': 32, 'max_steps': 10000, 'hidden_size': 512, 'num_layers': 2, 'num_heads': 2, 'dropout': 0, 'weight_decay': 0, 'learning_rate': 0.0001, 'gradient_clip_val': 0, 'data': 'D'}
-	arm+0,arm+1=>rel3+0: 4921850: {'in_features': [('arm', 0), ('arm', 1)], 'out_features': [('rel3', 0)], 'window': 1024}{'batch_size': 32, 'max_steps': 10000, 'hidden_size': 512, 'num_layers': 2, 'num_heads': 2, 'dropout': 0, 'weight_decay': 0, 'learning_rate': 0.0001, 'gradient_clip_val': 0, 'data': 'D'}
-	tcp3+0,tcp3+16=>rel3+0: 4921851: {'in_features': [('tcp3', 0), ('tcp3', 16)], 'out_features': [('rel3', 0)], 'window': 1024}{'batch_size': 32, 'max_steps': 10000, 'hidden_size': 512, 'num_layers': 2, 'num_heads': 2, 'dropout': 0, 'weight_decay': 0, 'learning_rate': 0.0001, 'gradient_clip_val': 0, 'data': 'D'}
+	### robot: state,next-state => action ###
+	tcp3+0,tcp3+1=>act3+0: 4921847: trn=0.0067 val=0.0046. {'in_features': [('tcp3', 0), ('tcp3', 1)], 'out_features': [('act3', 0)], 'window': 1024}{'batch_size': 32, 'max_steps': 10000, 'hidden_size': 512, 'num_layers': 2, 'num_heads': 2, 'dropout': 0, 'weight_decay': 0, 'learning_rate': 0.0001, 'gradient_clip_val': 0, 'data': 'D'}
+	tcp3+0,tcp3+1=>rel3+0: 4921848: trn=0.015 val=0.017. {'in_features': [('tcp3', 0), ('tcp3', 1)], 'out_features': [('rel3', 0)], 'window': 1024}{'batch_size': 32, 'max_steps': 10000, 'hidden_size': 512, 'num_layers': 2, 'num_heads': 2, 'dropout': 0, 'weight_decay': 0, 'learning_rate': 0.0001, 'gradient_clip_val': 0, 'data': 'D'}
+	arm+0,arm+1=>rel3+0: 4921850: trn=0.021 val=0.025. {'in_features': [('arm', 0), ('arm', 1)], 'out_features': [('rel3', 0)], 'window': 1024}{'batch_size': 32, 'max_steps': 10000, 'hidden_size': 512, 'num_layers': 2, 'num_heads': 2, 'dropout': 0, 'weight_decay': 0, 'learning_rate': 0.0001, 'gradient_clip_val': 0, 'data': 'D'}
+	tcp3+0,tcp3+16=>rel3+0: 4921851: trn=0.038 val=0.04. {'in_features': [('tcp3', 0), ('tcp3', 16)], 'out_features': [('rel3', 0)], 'window': 1024}{'batch_size': 32, 'max_steps': 10000, 'hidden_size': 512, 'num_layers': 2, 'num_heads': 2, 'dropout': 0, 'weight_decay': 0, 'learning_rate': 0.0001, 'gradient_clip_val': 0, 'data': 'D'}
 	arm+0,arm+16=>rel3+0: 4921852: trn=0.04 val=0.05. 10K-steps. still improving. {'in_features': [('arm', 0), ('arm', 16)], 'out_features': [('rel3', 0)], 'window': 1024}{'batch_size': 32, 'max_steps': 10000, 'hidden_size': 512, 'num_layers': 2, 'num_heads': 2, 'dropout': 0, 'weight_decay': 0, 'learning_rate': 0.0001, 'gradient_clip_val': 0, 'data': 'D'}
-	  did not converge yet, try longer run.
+	  they did not converge yet, try longer run.
+
+	### scene: state,action=>next-state ###
+	tcp0,scn0,act0=>scn1: 4922109: overfitting, trnloss>0.1 {'in_features': [('tcp', 0), ('scene', 0), ('act', 0)], 'out_features': [('scene', 1)], 'window': 1024}{'batch_size': 32, 'max_steps': 10000, 'hidden_size': 512, 'num_layers': 2, 'num_heads': 2, 'dropout': 0, 'weight_decay': 0, 'learning_rate': 0.0001, 'gradient_clip_val': 0, 'data': 'D'}
+	tcp0,scn0,rel0=>scn1: 4922112: overfitting, trnloss>0.1 {'in_features': [('tcp', 0), ('scene', 0), ('rel', 0)], 'out_features': [('scene', 1)], 'window': 1024}{'batch_size': 32, 'max_steps': 10000, 'hidden_size': 512, 'num_layers': 2, 'num_heads': 2, 'dropout': 0, 'weight_decay': 0, 'learning_rate': 0.0001, 'gradient_clip_val': 0, 'data': 'D'}
+
+	### scene: state,next-state => action ###
+	tcp0,scn0,scn1=>act0: 4922116: overfitting, trnloss=0.1 {'in_features': [('tcp', 0), ('scene', 0), ('scene', 1)], 'out_features': [('act', 0)], 'window': 1024}{'batch_size': 32, 'max_steps': 10000, 'hidden_size': 512, 'num_layers': 2, 'num_heads': 2, 'dropout': 0, 'weight_decay': 0, 'learning_rate': 0.0001, 'gradient_clip_val': 0, 'data': 'D'}
+	  this is hard to guess, scene does not always change.
+	tcp0,scn0,scn1=>rel0: 4922117: val=0.11 {'in_features': [('tcp', 0), ('scene', 0), ('scene', 1)], 'out_features': [('rel', 0)], 'window': 1024}{'batch_size': 32, 'max_steps': 10000, 'hidden_size': 512, 'num_layers': 2, 'num_heads': 2, 'dropout': 0, 'weight_decay': 0, 'learning_rate': 0.0001, 'gradient_clip_val': 0, 'data': 'D'}
+	tcp0,scn0,scn16=>rel0: 4922118: val=0.11 {'in_features': [('tcp', 0), ('scene', 0), ('scene', 16)], 'out_features': [('rel', 0)], 'window': 1024}{'batch_size': 32, 'max_steps': 10000, 'hidden_size': 512, 'num_layers': 2, 'num_heads': 2, 'dropout': 0, 'weight_decay': 0, 'learning_rate': 0.0001, 'gradient_clip_val': 0, 'data': 'D'}
+	tcp0,scn0,scn32=>rel0: 4922119: val=0.11 {'in_features': [('tcp', 0), ('scene', 0), ('scene', 32)], 'out_features': [('rel', 0)], 'window': 1024}{'batch_size': 32, 'max_steps': 10000, 'hidden_size': 512, 'num_layers': 2, 'num_heads': 2, 'dropout': 0, 'weight_decay': 0, 'learning_rate': 0.0001, 'gradient_clip_val': 0, 'data': 'D'}
+	tcp0,scn0,scn64=>rel0: 4922120: val=0.11 {'in_features': [('tcp', 0), ('scene', 0), ('scene', 64)], 'out_features': [('rel', 0)], 'window': 1024}{'batch_size': 32, 'max_steps': 10000, 'hidden_size': 512, 'num_layers': 2, 'num_heads': 2, 'dropout': 0, 'weight_decay': 0, 'learning_rate': 0.0001, 'gradient_clip_val': 0, 'data': 'D'}
+	  32 and 64 look very similar, try 128, 256.
+	tcp0,scn0=>rel0: 4922179: val=0.1064 {'in_features': [('tcp', 0), ('scene', 0)], 'out_features': [('rel', 0)], 'window': 1024}{'batch_size': 32, 'max_steps': 10000, 'hidden_size': 512, 'num_layers': 2, 'num_heads': 2, 'dropout': 0, 'weight_decay': 0, 'learning_rate': 0.0001, 'gradient_clip_val': 0, 'data': 'D'}
+	  this as a baseline without the goal scene. maybe we are just learning to continue the recent action without paying attn to goal.
+	tcp3.0,scn0,scn1=>rel3.0: 4922126: val=0.081
+	tcp3.0,scn0,scn16=>rel3.0: 4922127: val=0.084
+	tcp3.0,scn0,scn32=>rel3.0: 4922128: val=0.085
+	tcp3.0,scn0,scn64=>rel3.0: 4922129: val=0.087
+	tcp3.0,scn0=>rel3.0: 4922180: val=0.0761 {'in_features': [('tcp3', 0), ('scene', 0)], 'out_features': [('rel3', 0)], 'window': 1024}{'batch_size': 32, 'max_steps': 10000, 'hidden_size': 512, 'num_layers': 2, 'num_heads': 2, 'dropout': 0, 'weight_decay': 0, 'learning_rate': 0.0001, 'gradient_clip_val': 0, 'data': 'D'}
+	  this is also as baseline, guessing the action without a goal. better than the alternatives, so not learning anything from goal.
 
 2023-03-26  dyuret  <dyuret@login03.kuacc.ku.edu.tr>
 
