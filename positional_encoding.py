@@ -1,3 +1,4 @@
+import math
 import torch
 import torch.nn as nn
 
@@ -20,7 +21,7 @@ class PositionalEncoding(nn.Module):
         >>> pos_encoder = PositionalEncoding(d_model)
     """
 
-    def __init__(self, d_model, dropout=0, max_len=64, batch_first=True):
+    def __init__(self, d_model, dropout=0, max_len=5000, batch_first=True):
         super(PositionalEncoding, self).__init__()
         self.dropout = nn.Dropout(p=dropout)
         self.batch_first = batch_first

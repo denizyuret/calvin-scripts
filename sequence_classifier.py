@@ -1,4 +1,3 @@
-import math
 import torch
 import pytorch_lightning as pl
 import torch.nn as nn
@@ -8,6 +7,7 @@ from torch.utils.data import DataLoader
 from pytorch_lightning.callbacks import ModelCheckpoint
 from torch.nn.functional import cross_entropy, softmax
 from warnings import warn
+from positional_encoding import PositionalEncoding
 
 
 class SequenceClassifier(pl.LightningModule):
@@ -59,7 +59,7 @@ class SequenceClassifier(pl.LightningModule):
         encoder_layer = nn.TransformerEncoderLayer(self.hidden_size, self.num_heads, self.dim_feedforward, self.dropout, batch_first=True)
         return nn.Sequential(
             nn.Linear(self.input_size, self.hidden_size),          # [B,T,X] => [B,T,H]; in word_language_model there is also a scaling *math.sqrt(hidden)?
-            PositionalEncoding(self.hidden_size, dropout=self.dropout), # [B,T,H] => [B,T,H]
+            PositionalEncoding(self.hidden_size, max_len=self.context_length, dropout=self.dropout), # [B,T,H] => [B,T,H]
             nn.TransformerEncoder(encoder_layer, self.num_layers), # [B,T,H] => [B,T,H]
             AdaptivePool(dim=1, op=self.pool),                     # [B,T,H] => [B,H]
             nn.Linear(self.hidden_size, self.num_classes))
@@ -89,12 +89,12 @@ class SequenceClassifier(pl.LightningModule):
         acc.update(preds, target)
         return loss1
 
-    def training_epoch_end(self, outputs):
+    def on_train_epoch_end(self):
         self.log("wnorm", torch.norm(torch.cat([p.view(-1) for p in self.parameters()])))
         self.log("trn_loss", self.trn_loss.compute()); self.trn_loss.reset()
         self.log("trn_acc", self.trn_acc.compute());   self.trn_acc.reset()
 
-    def validation_epoch_end(self, outputs):
+    def on_validation_epoch_end(self):
         self.log("val_loss", self.val_loss.compute()); self.val_loss.reset()
         val_acc = self.val_acc.compute(); self.val_acc.reset()
         self.log("val_acc", val_acc)
@@ -127,31 +127,6 @@ class RNNOutput(nn.Module):
     def forward(self,x):
         tensor, _ = x           # LSTM output x = output[B,T,H], (h_n[L,B,H], c_n[L,B,H]) where B:batch,T:seqlen,H:hidden,L:layers,batch_first=True
         return tensor
-
-
-# From: pytorch/examples/word_language_model/model.py
-class PositionalEncoding(nn.Module):
-    def __init__(self, d_model, dropout=0, max_len=64, batch_first=True):
-        super(PositionalEncoding, self).__init__()
-        self.dropout = nn.Dropout(p=dropout)
-        self.batch_first = batch_first
-        pe = torch.zeros(max_len, d_model) # [T,H]
-        position = torch.arange(0, max_len, dtype=torch.float).unsqueeze(1)
-        div_term = torch.exp(torch.arange(0, d_model, 2).float() * (-math.log(10000.0) / d_model))
-        pe[:, 0::2] = torch.sin(position * div_term)
-        pe[:, 1::2] = torch.cos(position * div_term)
-        if batch_first:
-            pe = pe.unsqueeze(0) # [T,H] => [1,T,H]
-        else:
-            pe = pe.unsqueeze(0).transpose(0, 1) # [T,H] => [1,T,H] => [T,1,H]
-        self.register_buffer('pe', pe)
-
-    def forward(self, x):
-        if self.batch_first:
-            x = x + self.pe[:, :x.size(1), :] # x[B,T,H] + pe[1,0:T,H]
-        else:
-            x = x + self.pe[:x.size(0), :, :]  # x[T,B,H] + pe[0:T,1,H]
-        return self.dropout(x)
 
 
 # Given trn and val datasets and optional hyperparameters, train and return a model
