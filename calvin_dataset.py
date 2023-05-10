@@ -43,7 +43,7 @@ class CalvinDataset(Dataset):
         frameids = npzfile['frameids']
         tasknames = npzfile['tasknames'].tolist()
         fieldnames = npzfile['fieldnames'].tolist()
-        episodes = npzfile['episodes']
+        episodes = np.sort(npzfile['episodes'], axis=0)
         normalized_fields = [ fieldnames.index(f) for f in ('tcpg', 'button', 'switch') ]
                 
         # There are three indices for each frame:
@@ -101,7 +101,7 @@ class PlayDataset(Dataset):
         npzfile = np.load(path, allow_pickle=True)
         fieldnames = npzfile['fieldnames'].tolist()
         frameids = npzfile['frameids']
-        episodes = npzfile['episodes']
+        episodes = np.sort(npzfile['episodes'], axis=0)
         data = npzfile['data']
         normalized_fields = [ fieldnames.index(f) for f in ('tcpg', 'button', 'switch') ]
         data[:,normalized_fields] = data[:,normalized_fields] * 10.0
@@ -150,7 +150,7 @@ class TwoFrameDataset(Dataset):
         frameids = npzfile['frameids']
         tasknames = npzfile['tasknames'].tolist()
         fieldnames = npzfile['fieldnames'].tolist()
-        episodes = npzfile['episodes']
+        episodes = np.sort(npzfile['episodes'], axis=0)
         normalized_fields = [ fieldnames.index(f) for f in ('tcpg', 'button', 'switch') ]
                 
         # build reverse maps
