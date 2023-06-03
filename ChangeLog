@@ -1,3 +1,37 @@
+2023-06-03  dyuret  <dyuret@login03.kuacc.ku.edu.tr>
+
+	* eval:
+	emrecanacikgoz/robot-language clone main branch
+	cd evaluation
+	read README
+	downgrade numpy (create calvin-eval env)
+	train-bc.py: training script for behavior cloning
+	policies/behavior_cloning.py: model definition
+	lightning model needs a step method step(self, state, task_id) => action_pred[7D] xyz, abc, gripper[-1,+1]
+	experiments/ => model gets saved
+	cd evaluation/ => do the evaluation here
+	model file is copied here
+	evaluate_multistep.py
+	evaluate_singlestep.py: we are using this now
+	needs TRAIN_FOLDER: simulator config file is here
+	DATASET_PATH: /datasets/calvin/D/
+	CONF_DIR: points to calvin directory
+	DEBUG=True: saves videos
+	ENV=None: use their environment, not our own.
+	checkpoint: use your model
+	import model.py file in the beginning
+	model = Transformer.load_from_checkpoint()
+	model.cuda: we need to do it?
+	evaluation/utils.py: TASK_TO_ID_DICT: frame-ids in D that corresponds to particular task.
+	back in evaluate_singlestep.py:
+	rollout function is in rollout.py.
+	rollout.py:29 determines input to model: episode[]
+	env.step() executes one step in simulator
+	action comes from model
+	env.step gives obs, current_info
+	get_task_info_for_set: returns true/false for success
+	original code: evaluate_policy_singlestep.py - bug-free rollout.
+
 2023-03-29  dyuret  <dyuret@login03.kuacc.ku.edu.tr>
 
 	* warning:
