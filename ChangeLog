@@ -1,3 +1,7 @@
+2023-08-18  dyuret  <dyuret@login02.kuacc.ku.edu.tr>
+
+	* calvin_ssl_baselines.py: Measures prediction accuracy of simple baselines for tcp prediction.
+
 2023-06-03  dyuret  <dyuret@login03.kuacc.ku.edu.tr>
 
 	* eval:

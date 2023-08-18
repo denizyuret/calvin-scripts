@@ -7,7 +7,7 @@ import numpy as np
 import pytorch_lightning as pl
 from torch.utils.data import DataLoader
 from torchmetrics.functional.classification import multiclass_confusion_matrix, multiclass_accuracy
-from calvindataset import CalvinDataset
+from calvin_dataset import CalvinDataset
 import loaddata as ld
 import mlp
 import rnn
