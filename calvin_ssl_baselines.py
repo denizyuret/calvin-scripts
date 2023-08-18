@@ -5,11 +5,28 @@
 # f = extract_features(e, range(3,6), sincos=True) # default=False
 # f = extract_features(e, range(3,6), stride=8)    # default=1
 # rmsd1(f)
-# TODO: treatment of (1) distances, (2) angles, (3) binary features should be different!
 
 import numpy as np
 import sys
 from argparse import ArgumentParser
+
+# Treatment of (1) distances, (2) angles, (3) binary features should be different!
+# Squared error only makes sense if everybody is using the same units. Notes:
+# - act[t]=tcp[t+1]
+# - rel[t]=normalize_dist/angle(tcp[t+1]-tcp[t]))
+# - normalize_dist=clip(act-obs,-0.02,0.02)/0.02
+# - normalize_angle=clip(((act-obs) + pi) % (2*pi) - pi, -0.05, 0.05)/0.05
+
+meter_features = ['actx','acty','actz','tcpx','tcpy','tcpz','tcpg','redx','redy','redz','bluex','bluey','bluez','pinkx','pinky','pinkz','slider.x','slider.y','slider.z','drawer.x','drawer.y','drawer.z','button.x','button.y','button.z','switch.x','switch.y','switch.z']
+controller_features = ['slider','drawer','button','switch']  # these use relative (and for button, scaled) coordinates, see calvin_controller_xyz.py
+radian_features = ['acta','actb','actc','tcpa','tcpb','tcpc','arm1','arm2','arm3','arm4','arm5','arm6','arm7','reda','redb','redc','bluea','blueb','bluec','pinka','pinkb','pinkc']
+binary11_features = ['actg','relg','armg'] # (-1/1); actg and relg identical, refer to action, armg refers to sensing
+binary01_features = ['lightbulb','greenlight']  # (0/1) binary
+rel_meter_features = ['relx','rely','relz']     # unit=2cm, cropped to +-1
+rel_angle_features = ['rela','relb','relc']     # unit=0.05 radians, cropped to +-1
+depth_tactile_features = ['tact1d', 'tact2d']   # depth normalized with x100
+rgb_tactile_features = ['tact1r', 'tact1g', 'tact1b', 'tact2r', 'tact2g', 'tact2b'] # rgb normalized with /255.0
+
 
 def rmsd_all(path='data/D-training.npz', stride=1, degree=1):
     d = np.load(path, allow_pickle=True)

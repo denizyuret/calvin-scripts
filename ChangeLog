@@ -1,6 +1,29 @@
 2023-08-18  dyuret  <dyuret@login02.kuacc.ku.edu.tr>
 
 	* calvin_ssl_baselines.py: Measures prediction accuracy of simple baselines for tcp prediction.
+	- We need to treat angles, distances and binary features appropriately.
+	- Using squared error on features with different units is bad.
+	- xyz features have units of meters.
+	- abc features have units of radians.
+	- controller features are scaled (we can use the derived xyz versions, e.g. slider.x).
+	- rel features are scaled (xyz have units of 2cm, abc have units of 0.05 radians).
+	- actg, relg, armg are -1/+1 binary.
+	- lightbulb, greenlight are 0/1 binary.
+
+	* input-vs-output:
+	- The input scaling does not effect the loss, as long as we keep the average value around 1, sgd should work fine.
+	- The output scaling directly effects the relative contributions of different outputs to the loss, so be more careful there.
+
+	* meters-vs-radians:
+	- In order to combine meters vs radians in loss, we need to bring them to similar units.
+	- Because of the wrap-around problem with radians, we already convert them to (sin,cos) pairs.
+	- (sin,cos) are in fact xy coordinates on a unit circle.
+	- The gripper width is 8cm, we can take 10cm to be the diameter (5cm radius) of our "unit" circle.
+	- To work in cm, we'd have to scale xyz by *100 and sincos(abc) with *5.
+	- In the rel transform calvin scales xyz by *50 and radians by *20.
+	- Our 5cm unit circle has circumference of 31.4cm corresponding to 2pi (6.28) radians. The radian->cm scaling factor would be 5.
+	- So, instead of rel coordinates *50/*20 scaling we should use *100/*5 scaling and use sincos instead of radians.
+
 
 2023-06-03  dyuret  <dyuret@login03.kuacc.ku.edu.tr>
 

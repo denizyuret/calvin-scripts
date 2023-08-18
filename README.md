@@ -94,43 +94,45 @@ A summary of all data (including images) in episode_XXXXXXX.npz files (each repr
 ## calvin-tsv-fields
 
 The fields in the output of calvin_extract_numbers.py (files like D-training.tsv.gz) is as follows:
+(The npz files keep idnum separate, so column 0 is actx and in general subtract 1 from the following to get column index).
+(The ranges given below are from D-validation).
 
 00. idnum
-01. actions/x (tcp (tool center point) position: x,y,z in absolute world coordinates: we want in the next frame, i.e. act[t] = tcp[t+1])
-02. actions/y
-03. actions/z
-04. actions/a (tcp orientation (3): euler angles a,b,c in absolute world coordinates)
-05. actions/b
-06. actions/c
-07. actions/g (gripper_action (1): binary close=-1, open=1)
-08. rel_actions/x (tcp position (3): x,y,z in relative world coordinates normalized and clipped to (-1, 1) with scaling factor 50: rel[t]=normalize(act[t]-tcp[t]))
-09. rel_actions/y (normalize_dist=clip(act-obs,-0.02,0.02)/0.02, normalized_angle=clip(((act-obs) + pi) % (2*pi) - pi, -0.05, 0.05)/0.05
-10. rel_actions/z
-11. rel_actions/a (tcp orientation (3): euler angles a,b,c in relative world coordinates normalized and clipped to (-1, 1) with scaling factor 20)
-12. rel_actions/b
-13. rel_actions/c
-14. rel_actions/g (gripper_action (1): binary close=-1, open=1)
-15. robot_obs/x (tcp position (3): x,y,z in world coordinates: current position of tcp, i.e. tcp[t]=act[t-1])
-16. robot_obs/y
-17. robot_obs/z
-18. robot_obs/a (tcp orientation (3): euler angles a,b,c in world coordinates)
-19. robot_obs/b
-20. robot_obs/c
-21. robot_obs/w (gripper opening width (1): in meters)
-22. robot_obs/j1 (arm_joint_states (7): in rad)
-23. robot_obs/j2
-24. robot_obs/j3
-25. robot_obs/j4
-26. robot_obs/j5
-27. robot_obs/j6
-28. robot_obs/j7
-29. robot_obs/g (gripper_action (1): binary close = -1, open = 1)
-30. scene_obs/sliding_door (1): joint state: range=[-0.002359:0.306696]
-31. scene_obs/drawer (1): joint state: range=[-0.002028:0.221432]
-32. scene_obs/button (1): joint state: range=[-0.000935:0.033721]
-33. scene_obs/switch (1): joint state: range=[-0.004783:0.091777]
-34. scene_obs/lightbulb (1): on=1, off=0
-35. scene_obs/green light (1): on=1, off=0
+01. actions/x [-0.42,0.37] (tcp (tool center point) position: x,y,z in absolute world coordinates in meters: we want in the next frame, i.e. act[t] = tcp[t+1])
+02. actions/y [-0.46,0.10]
+03. actions/z [0.30,0.69]
+04. actions/a [-pi,pi] (tcp orientation (3): euler angles a,b,c in absolute world coordinates)
+05. actions/b [-0.46,0.32]
+06. actions/c [-pi,pi]
+07. actions/g [-1 or 1] (gripper_action (1): binary close=-1, open=1)
+08. rel_actions/x [-1,1] (tcp position (3): x,y,z in relative world coordinates normalized and clipped to (-1, 1) with scaling factor 50: rel[t]=normalize(act[t]-tcp[t]))
+09. rel_actions/y [-1,1] (normalize_dist=clip(act-obs,-0.02,0.02)/0.02, normalized_angle=clip(((act-obs) + pi) % (2*pi) - pi, -0.05, 0.05)/0.05
+10. rel_actions/z [-1,1]
+11. rel_actions/a [-1,1] (tcp orientation (3): euler angles a,b,c in relative world coordinates normalized and clipped to (-1, 1) with scaling factor 20)
+12. rel_actions/b [-1,1]
+13. rel_actions/c [-1,1]
+14. rel_actions/g [-1 or 1] (gripper_action (1): binary close=-1, open=1)
+15. robot_obs/x [-0.42,0.37] (tcp position (3): x,y,z in world coordinates: current position of tcp, i.e. tcp[t]=act[t-1])
+16. robot_obs/y [-0.46,0.10]
+17. robot_obs/z [0.30,0.69]
+18. robot_obs/a [-pi,pi] (tcp orientation (3): euler angles a,b,c in world coordinates)
+19. robot_obs/b [-0.46,0.32]
+20. robot_obs/c [-pi,pi]
+21. robot_obs/w [-0.02,0.08] (gripper opening width (1): in meters)
+22. robot_obs/j1 [-1.67,0.41] (arm_joint_states (7): in rad)
+23. robot_obs/j2 [-0.11,1.44]
+24. robot_obs/j3 [1.21,2.55]
+25. robot_obs/j4 [-2.80,-0.50]
+26. robot_obs/j5 [-1.65,0.17]
+27. robot_obs/j6 [1.27,2.56]
+28. robot_obs/j7 [-1.20,2.46]
+29. robot_obs/g  [-1 or 1] (gripper_action (1): binary close = -1, open = 1)
+30. scene_obs/sliding_door [-0.002,0.28] (relative coordinates in meters)
+31. scene_obs/drawer [0.0,0.22] (relative coordinates in meters)
+32. scene_obs/button [0.0,0.034] (relative coordinates, scaled)
+33. scene_obs/switch [0.04,0.09] (relative coordinates, scaled)
+34. scene_obs/lightbulb [0 or 1] (1): on=1, off=0
+35. scene_obs/green light [0 or 1] (1): on=1, off=0
 36. scene_obs/redx (red block (6): (x, y, z, euler_x, euler_y, euler_z)
 37. scene_obs/redy
 38. scene_obs/redz
